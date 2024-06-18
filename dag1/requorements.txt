@@ -1,5 +1,0 @@
-apache-airflow
-apache-airflow-providers-smtp
-apache-airflow-providers-http
-requests
-
