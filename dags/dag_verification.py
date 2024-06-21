@@ -19,7 +19,7 @@ with DAG(
     schedule_interval=None,  # Disable schedule, rely on File Sensor
 ) as dag:
 
-    dag_folder = settings.DAG_FOLDER  # Replace with actual DAG folder path
+    dag_folder = settings.DAGS_FOLDER  # Replace with actual DAG folder path
 
     # Wait for new DAG files
     check_new_dags = FileSensor(
