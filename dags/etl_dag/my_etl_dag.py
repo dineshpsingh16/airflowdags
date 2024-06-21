@@ -1,7 +1,9 @@
 from airflow import DAG
 from airflow.providers.sqlite.sensors.sqlite import SqliteSensor
-from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator  # Example operator
+from airflow.providers.http.sensors.http import HttpSensor  # Example sensor
+from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
 from airflow.operators.python import PythonVirtualenvOperator
+from datetime import datetime
 
 # ... other imports ...
 
@@ -16,43 +18,44 @@ with DAG(
     schedule_interval=None,  # Trigger manually or with a scheduler
 ) as dag:
 
-    # ... (File sensor and DB sensor definitions remain the same) ...
-
-    # Python virtualenv operator to manage dependencies
+    # Create virtual environment (assuming requirements.txt is managed by Gitsync)
     create_virtualenv = PythonVirtualenvOperator(
         task_id='create_virtualenv',
         python_callable=lambda: None,  # Empty callable for task execution
-        requirements='/app/requirements.txt',  # Path to requirements.txt within container
+        requirements='requirements.txt',  # Path to requirements.txt within container
         system_site_packages=False,  # Isolate dependencies within virtualenv
     )
 
-    # Your transformation and load tasks (replace with actual operators)
-    # transformation_task = ...
-    load_data = KubernetesPodOperator(  # Example using KubernetesPodOperator
+    # Check for data availability (replace with your actual sensor)
+    wait_for_data_http = HttpSensor(
+        task_id='wait_for_data_http',
+        http_conn_id='your_http_conn_id',
+        endpoint=f"your-api.com/data/availability",
+        response_check=lambda response: response.status_code == 200,
+        timeout=60,
+        retries=5,
+    )
+
+    # Check for data processing completion in SQLite DB (replace with your condition)
+    wait_for_processing = SqliteSensor(
+        task_id='wait_for_processing',
+        sql="SELECT COUNT(*) FROM processing_log WHERE status = 'completed'",
+        conn_id='your_sqlite_conn_id',
+        timeout=120,
+    )
+
+    # Data transformation task (replace with actual operator)
+    transform_data = KubernetesPodOperator(
+        task_id='transform_data',
+        # ... Kubernetes pod configuration ...
+    )
+
+    # Data loading task (replace with actual operator)
+    load_data = KubernetesPodOperator(
         task_id='load_data',
         # ... Kubernetes pod configuration ...
     )
 
     # Set up task dependencies
-    # ... (Dependencies for file sensor and DB sensor remain the same) ...
-    wait_for_data_file >> create_virtualenv >> load_data
-    wait_for_db_update >> create_virtualenv >> load_data
-
-    # Update DAG run status based on load_data result (example with XCom)
-    def update_dag_run_status(context, **kwargs):
-        load_data_result = context['task_instance'].xcom_pull(task_ids='load_data')
-        # Check load_data result (e.g., for success/failure) and update DAG run status accordingly
-        # (This example assumes XCom pushes success/failure flags)
-        if load_data_result == 'success':
-            context['dag_run'].set_state(state='success')
-        else:
-            context['dag_run'].set_state(state='failed')
-
-    update_dag_run_status_task = PythonOperator(
-        task_id='update_dag_run_status',
-        python_callable=update_dag_run_status,
-        provide_context=True,
-        trigger_rule='one_success',  # Only run after successful load_data execution
-    )
-
-    load_data >> update_dag_run_status_task
+    create_virtualenv >> wait_for_data_http >> wait_for_processing
+    wait_for_processing >> transform_data >> load_data
