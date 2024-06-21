@@ -27,7 +27,7 @@ dag = DAG(
 # Define the FileSensor task
 file_sensor = FileSensor(
     task_id='check_for_file',
-    filepath='/usr/local/airflow/dags/data/input.csv',  # Correct absolute path within the container
+    filepath='/usr/local/airflow/dags/data/file_sensor_dag_input.csv',  # Correct absolute path within the container
     fs_conn_id='fs_default',
     poke_interval=60,
     timeout=600,
