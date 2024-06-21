@@ -7,6 +7,7 @@ from airflow import settings
 import subprocess
 from airflow.models import DagRun, TaskInstance
 from airflow.utils.state import State
+import logging
 import os
 import sys
 import importlib
@@ -16,7 +17,7 @@ default_args = {
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
 }
-
+logger = logging.getLogger("airflow.task")
 with DAG(
     dag_id='validate_dags',
     default_args=default_args,
@@ -44,11 +45,25 @@ with DAG(
             print(f"DAG file {dag_file_path} compiled successfully")
         except subprocess.CalledProcessError as e:
             print(f"Error compiling DAG file {dag_file_path}: {e}")
+            logger.error(f"Failed to import/compile DAG file {dag_file_path}.")
+            
             # Set DAG to error state (replace with actual method)
             dag = get_dag(dag_id=dag_file_path.split('/')[-1].replace('.py', ''))  # Extract DAG ID from filepath
             dag.set_is_paused(paused=False)  # Unpause first (if paused)
             dag.set_is_failed()
-    def mark_dagrun_failed(dag_file_path):
+    # def mark_dagrun_failed(dag_file_path):
+    #     dag_id = os.path.basename(dag_file_path).replace('.py', '')
+    #     dagbag = settings.DAGBAG
+    #     if dag_id in dagbag.dags:
+    #         dag = dagbag.get_dag(dag_id)
+    #         for dr in DagRun.find(dag_id=dag_id, state=State.RUNNING):
+    #             dr.set_state(State.FAILED)
+    #             for ti in dr.get_task_instances():
+    #                 ti.set_state(State.FAILED)
+    #         print(f"DAG run for {dag_id} set to FAILED")
+    #     else:
+    #         print(f"DAG {dag_id} not found in DAG bag")
+    def mark_dagrun_failed(dag_file_path, logger):
         dag_id = os.path.basename(dag_file_path).replace('.py', '')
         dagbag = settings.DAGBAG
         if dag_id in dagbag.dags:
@@ -57,21 +72,21 @@ with DAG(
                 dr.set_state(State.FAILED)
                 for ti in dr.get_task_instances():
                     ti.set_state(State.FAILED)
-            print(f"DAG run for {dag_id} set to FAILED")
+            logger.error(f"DAG run for {dag_id} set to FAILED")
         else:
-            print(f"DAG {dag_id} not found in DAG bag")
-
+            logger.error(f"DAG {dag_id} not found in DAG bag")
     def validate_dags_func(dag_file_path):
         try:
             subprocess.check_call(["python", "-m", "py_compile", dag_file_path])
             print(f"DAG file {dag_file_path} compiled successfully")
         except subprocess.CalledProcessError as e:
             print(f"Error compiling DAG file {dag_file_path}: {e}")
+            logger.error(f"Error compiling DAG file {dag_file_path}: {e}")
             # Set DAG to error state (replace with actual method)
             dag = get_dag(dag_id=dag_file_path.split('/')[-1].replace('.py', ''))  # Extract DAG ID from filepath
             dag.set_is_paused(paused=False)  # Unpause first (if paused)
             dag.set_is_failed()            
-            mark_dagrun_failed(dag)
+            mark_dagrun_failed(dag,logger)
     def validate_dags_func2(dag_file_path):
         try:
             # Try to import the module
