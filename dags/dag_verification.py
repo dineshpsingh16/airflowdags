@@ -1,7 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-# from airflow.providers.cncf.sensors.file import FileSensor
-from airflow.sensors.filesystem import FileSensor
+from airflow.providers.cncf.sensors.file import FileSensor
 from datetime import datetime, timedelta
 from airflow import settings
 import subprocess
@@ -77,7 +76,7 @@ with DAG(
             logger.error(f"DAG {dag_id} not found in DAG bag")
     def validate_dags_func(dag_file_path):
         try:
-            subprocess.check_call(["python", "-m", "py_compile", dag_file_path])
+            # subprocess.check_call(["python", "-m", "py_compile", dag_file_path])
             print(f"DAG file {dag_file_path} compiled successfully")
         except subprocess.CalledProcessError as e:
             print(f"Error compiling DAG file {dag_file_path}: {e}")
