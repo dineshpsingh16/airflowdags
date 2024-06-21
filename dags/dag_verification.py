@@ -1,6 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.providers.cncf.sensors.file import FileSensor
+# from airflow.providers.cncf.sensors.file import FileSensor
+from airflow.sensors.filesystem import FileSensor
 from datetime import datetime, timedelta
 from airflow import settings
 import subprocess
