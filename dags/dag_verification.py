@@ -1,120 +1,55 @@
-# from airflow import DAG
-# from airflow.operators.python_operator import PythonOperator
-# from airflow.utils.dates import days_ago
-# import os
-# import subprocess
-# import logging
-
-# # Define default arguments
-# default_args = {
-#     'owner': 'airflow',
-#     'start_date': days_ago(1),
-#     'retries': 1,
-# }
-
-# # Initialize the DAG
-# dag = DAG(
-#     'gitsync_dag',
-#     default_args=default_args,
-#     schedule_interval='@hourly',
-#     catchup=False,
-# )
-
-# # Path to the DAGs directory
-# dags_directory = '/opt/airflow/dags/repo'
-
-# # def git_sync():
-# #     """Synchronize with the git repository."""
-# #     try:
-# #         subprocess.check_call(['git', '-C', dags_directory, 'pull'])
-# #     except subprocess.CalledProcessError as e:
-# #         logging.error(f"Git sync failed: {e}")
-# #         raise
-
-# def test_dag(dag_file):
-#     """Run dag_test on a given DAG file."""
-#     try:
-#         # Simulate dag_test logic here
-#         # Replace this with actual test logic
-#         if 'fail' in dag_file:
-#             raise ValueError(f"Test failed for DAG: {dag_file}")
-#     except Exception as e:
-#         logging.error(e)
-#         return False
-#     return True
-
-# def process_dags():
-#     """Process each DAG and set its state based on test results."""
-#     error_detected = False
-#     for dag_file in os.listdir(dags_directory):
-#         if dag_file.endswith('.py'):
-#             dag_path = os.path.join(dags_directory, dag_file)
-#             if not test_dag(dag_path):
-#                 error_detected = True
-#                 set_dag_state(dag_file, 'error')
-#             else:
-#                 set_dag_state(dag_file, 'stopped')
-#     if error_detected:
-#         set_overall_state('error')
-#     else:
-#         set_overall_state('success')
-
-# def set_dag_state(dag_id, state):
-#     """Set the state of a given DAG."""
-#     # Implement logic to set DAG state (e.g., using Airflow REST API)
-#     logging.info(f"Set state of {dag_id} to {state}")
-
-# def set_overall_state(state):
-#     """Set the overall state of the DAG sync process."""
-#     logging.info(f"Set overall state to {state}")
-
-# # Define the tasks
-# # git_sync_task = PythonOperator(
-# #     task_id='git_sync',
-# #     python_callable=git_sync,
-# #     dag=dag,
-# # )
-
-# process_dags_task = PythonOperator(
-#     task_id='process_dags',
-#     python_callable=process_dags,
-#     dag=dag,
-# )
-
-# # Set the task dependencies
-# # git_sync_task >> process_dags_task
-
-# process_dags_task
-
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
+from airflow.providers.cncf.sensors.file import FileSensor
 from datetime import datetime, timedelta
-
-# Import the verification script
-from verify_dags import verify_dags
+from airflow import settings
+import subprocess
 
 default_args = {
     'owner': 'airflow',
-    'depends_on_past': False,
-    'email_on_failure': False,
-    'email_on_retry': False,
+    'start_date': datetime(2024, 6, 21),
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
 }
 
-dag = DAG(
-    'dag_verification',
+with DAG(
+    dag_id='validate_dags',
     default_args=default_args,
-    description='A DAG to verify newly changed DAGs',
-    schedule_interval=None,  # Only triggered manually
-    start_date=datetime(2023, 1, 1),
-    catchup=False,
-)
+    schedule_interval=None,  # Disable schedule, rely on File Sensor
+) as dag:
 
-verify_task = PythonOperator(
-    task_id='verify_dags',
-    python_callable=verify_dags,
-    dag=dag,
-)
+    dag_folder = settings.DAG_FOLDER  # Replace with actual DAG folder path
 
-verify_task
+    # Wait for new DAG files
+    check_new_dags = FileSensor(
+        task_id='check_new_dags',
+        filepath=f"{dag_folder}/*.py",
+        fs_conn_id='your_fs_conn_id',  # Optional connection for external storage
+        poke_interval=30,
+    )
+    def get_dag(dag_id):
+        """
+        Custom function to retrieve DAG object based on ID.
+        """
+        dagbag = settings.dag_bag
+        return dagbag.get_dag(dag_id)
+    def validate_dags_func(dag_file_path):
+        try:
+            subprocess.check_call(["python", "-m", "py_compile", dag_file_path])
+            print(f"DAG file {dag_file_path} compiled successfully")
+        except subprocess.CalledProcessError as e:
+            print(f"Error compiling DAG file {dag_file_path}: {e}")
+            # Set DAG to error state (replace with actual method)
+            dag = get_dag(dag_id=dag_file_path.split('/')[-1].replace('.py', ''))  # Extract DAG ID from filepath
+            dag.set_is_paused(paused=False)  # Unpause first (if paused)
+            dag.set_is_failed()
+
+    validate_dags = PythonOperator(
+        task_id='validate_dags',
+        python_callable=validate_dags_func,
+        provide_context=True,
+        op_args=[ '{{ tix.xcom_pull(task_ids="check_new_dags") }}'],  # Pass filepath from FileSensor
+        trigger_rule='one_success',  # Run only when File Sensor succeeds
+    )
+
+    check_new_dags >> validate_dags
