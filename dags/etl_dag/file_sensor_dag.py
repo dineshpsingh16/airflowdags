@@ -62,7 +62,7 @@ process_file = BashOperator(
     echo "AIRFLOW_HOME: $AIRFLOW_HOME"  # Print with label
 
     # Use grep with full option names for clarity
-    grep --ignore-case "python" "$AIRFLOW_HOME/airflow.cfg"
+    grep --ignore-case python $AIRFLOW_HOME/airflow.cfg
     """,
     dag=dag,
 )
