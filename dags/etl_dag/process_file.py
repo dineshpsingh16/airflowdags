@@ -51,12 +51,12 @@ def process_csv():
     # For now, we just save it to the output file
     
     # Save the dataframe to a new CSV file
-    df.to_csv(output_path, index=False)
+    # df.to_csv(output_path, index=False)
     # generate_pdf_report(df.copy(),reportpath) 
     # Send email with attachment
-    send_email_with_attachment(output_path)
-    os.remove(input_path)
-    os.remove(output_path)
+    send_email_with_attachment(input_path)
+    # os.remove(input_path)
+    # os.remove(output_path)
     # os.remove(reportpath)
 def send_email_with_attachment(file_path):
     sender_email = "dineshpsingh@yahoo.com"  # Replace with your Yahoo email
