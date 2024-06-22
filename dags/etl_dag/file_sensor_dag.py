@@ -60,7 +60,6 @@ end_task = DummyOperator(
     task_id='end',
     dag=dag,
 )
-dags_folder = '/usr/local/airflow/dags'
 # Log the DAGs folder name
 logger.info(f"DAGs folder: {dags_folder}")
 
