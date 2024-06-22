@@ -8,8 +8,9 @@ from email.mime.text import MIMEText
 from email import encoders
 import os
 from airflow import secrets
+from airflow.configuration import conf
 # from reportlab.pdfgen import canvas  # Install reportlab library: pip install reportlab
-
+dags_folder = conf.get('core', 'dags_folder')
 # def generate_pdf_report(data,reportpath):
 #     """
 #     Generates a simple PDF report using reportlab
@@ -40,9 +41,9 @@ from airflow import secrets
 #     pdf.save()
 
 def process_csv():
-    input_path = '/usr/local/airflow/dags/data/etl_file_input.csv'
-    output_path = '/usr/local/airflow/dags/data/etl_file_output.csv'
-    reportpath = '/usr/local/airflow/dags/data/etl_file_output.csv'
+    input_path = f"{dags_folder}/data/etl_file_input.csv"
+    output_path = f"{dags_folder}/data/etl_file_output.csv"
+    # reportpath = '/usr/local/airflow/dags/data/etl_file_output.csv'
     # Load the CSV file
     df = pd.read_csv(input_path)
     
@@ -56,7 +57,7 @@ def process_csv():
     send_email_with_attachment(output_path)
     os.remove(input_path)
     os.remove(output_path)
-    os.remove(reportpath)
+    # os.remove(reportpath)
 def send_email_with_attachment(file_path):
     sender_email = "dineshpsingh@yahoo.com"  # Replace with your Yahoo email
     receiver_email = "dineshpsingh16@gmail.com"
