@@ -117,6 +117,7 @@ file_sensor = FileSensor(
 # Function to call process_file.py
 def process_file_fn():
     import subprocess
+    import os
     script_path = os.path.join(dags_folder, 'etl_dag', 'process_file.py')
     result = subprocess.run(['python', script_path], capture_output=True, text=True)
     if result.returncode != 0:
