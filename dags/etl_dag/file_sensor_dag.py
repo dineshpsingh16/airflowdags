@@ -34,8 +34,8 @@ file_sensor = FileSensor(
     task_id='check_for_file',
     filepath='etl_file_input.csv',  # Filepath relative to the `fs_default` path
     fs_conn_id='fs_default',
-    poke_interval=60,
-    timeout=600,
+    poke_interval=10,
+    timeout=60,
     dag=dag,
 )
 
