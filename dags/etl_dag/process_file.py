@@ -13,7 +13,8 @@ from traceback import print_exc
 # from reportlab.pdfgen import canvas  # Install reportlab library: pip install reportlab
 dags_folder = conf.get('core', 'dags_folder')
 VAR_ENV_PREFIX = "AIRFLOW_VAR_"
-yahoo_app_password=os.environ.get(VAR_ENV_PREFIX + "YAHOO_APP_PASSWORD")
+EMAIL_SEND_PASSWORD=os.environ.get(VAR_ENV_PREFIX + "EMAIL_SEND_PASSWORD")
+EMAIL_SEND_LOGIN=os.environ.get(VAR_ENV_PREFIX + "EMAIL_SEND_LOGIN")
 # def generate_pdf_report(data,reportpath):
 #     """
 #     Generates a simple PDF report using reportlab
@@ -62,8 +63,8 @@ def process_csv():
     # os.remove(output_path)
     # os.remove(reportpath)
 def send_email_with_attachment(file_path):
-    sender_email = "dineshpsingh@yahoo.com"  # Replace with your Yahoo email
-    receiver_email = "dineshpsingh16@gmail.com"
+    sender_email = "dineshpsingh16@gmail.com"  # Replace with your Yahoo email
+    receiver_email = "dineshpsingh@yahoo.com"
     subject = "Processed CSV File"
     body = "Please find the attached processed CSV file."
     
@@ -74,8 +75,9 @@ def send_email_with_attachment(file_path):
     
     
     try:
-        server = smtplib.SMTP_SSL('smtp.mail.yahoo.com', 465)
-        server.login(sender_email, yahoo_app_password)  # Replace with generated App Password
+        server = smtplib.SMTP_SSL('smtp-relay.brevo.com', 465)
+        server.starttls()
+        server.login(EMAIL_SEND_LOGIN, EMAIL_SEND_PASSWORD)  # Replace with generated App Password
         text = msg.as_string()
         # Attach CSV file
         with open(file_path, "rb") as attachment:
