@@ -9,6 +9,7 @@ from email import encoders
 import os
 from airflow import secrets
 from airflow.configuration import conf
+from traceback import print_exc
 # from reportlab.pdfgen import canvas  # Install reportlab library: pip install reportlab
 dags_folder = conf.get('core', 'dags_folder')
 VAR_ENV_PREFIX = "AIRFLOW_VAR_"
@@ -87,6 +88,7 @@ def send_email_with_attachment(file_path):
         server.quit()
     except Exception as e:
         print(f"Failed to send email: {e}")
+        print_exc()
 
 if __name__ == "__main__":
     process_csv()
