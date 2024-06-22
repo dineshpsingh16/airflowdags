@@ -47,7 +47,7 @@ process_file = BashOperator(
     python3 -m venv $VENV_DIR && \
     source $VENV_DIR/bin/activate && \
     pip install pandas reportlab && \
-    python {dags_folder}/etl_dag/process_file.py && \
+    python {dags_folder}/repo/dags/etl_dag/process_file.py && \
     deactivate && \
     rm -rf $VENV_DIR
     """,
