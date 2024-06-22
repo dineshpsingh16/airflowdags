@@ -3,6 +3,10 @@ from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.bash_operator import BashOperator
 from airflow.contrib.sensors.file_sensor import FileSensor
+import logging
+import os
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Define the default arguments
 default_args = {
@@ -55,6 +59,13 @@ end_task = DummyOperator(
     task_id='end',
     dag=dag,
 )
+dags_folder = '/usr/local/airflow/dags'
+# Log the DAGs folder name
+logger.info(f"DAGs folder: {dags_folder}")
+
+# Log the list of files in the DAGs folder
+logger.info(f"List of files in the DAGs folder: {os.listdir(dags_folder)}")
+
 
 # Set the task dependencies
 file_sensor >> process_file >> end_task
