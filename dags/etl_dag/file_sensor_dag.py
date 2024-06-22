@@ -5,9 +5,10 @@ from airflow.operators.bash_operator import BashOperator
 from airflow.contrib.sensors.file_sensor import FileSensor
 import logging
 import os
+from airflow.configuration import conf
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
+dags_folder = conf.get('core', 'dags_folder')
 # Define the default arguments
 default_args = {
     'owner': 'airflow',
