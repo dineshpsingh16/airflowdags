@@ -40,16 +40,24 @@ file_sensor = FileSensor(
 )
 
 # Define the BashOperator task to create a unique virtual environment, install Pandas, and process the file
+# process_file = BashOperator(
+#     task_id='process_file',
+#     bash_command=f"""
+#     VENV_DIR=/tmp/venv_{{ ti.dag_id }}_{{ ti.task_id }} && \
+#     python3 -m venv $VENV_DIR && \
+#     source $VENV_DIR/bin/activate && \
+#     pip install pandas reportlab && \
+#     python {dags_folder}/repo/dags/etl_dag/process_file.py && \
+#     deactivate && \
+#     rm -rf $VENV_DIR
+#     """,
+#     dag=dag,
+# )
+
 process_file = BashOperator(
     task_id='process_file',
     bash_command=f"""
-    VENV_DIR=/tmp/venv_{{ ti.dag_id }}_{{ ti.task_id }} && \
-    python3 -m venv $VENV_DIR && \
-    source $VENV_DIR/bin/activate && \
-    pip install pandas reportlab && \
-    python {dags_folder}/repo/dags/etl_dag/process_file.py && \
-    deactivate && \
-    rm -rf $VENV_DIR
+    pwd && ls -ltr 
     """,
     dag=dag,
 )
