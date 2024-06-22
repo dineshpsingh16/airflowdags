@@ -17,7 +17,7 @@ def generate_pdf_report(data,reportpath):
     """
 
     # Create a new PDF document
-    # pdf = canvas.Canvas(reportpath)
+    pdf = canvas.Canvas(reportpath)
 
     # Set title and other formatting options
     pdf.setFont("Helvetica", 16)
