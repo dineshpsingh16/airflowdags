@@ -11,6 +11,8 @@ from airflow import secrets
 from airflow.configuration import conf
 # from reportlab.pdfgen import canvas  # Install reportlab library: pip install reportlab
 dags_folder = conf.get('core', 'dags_folder')
+VAR_ENV_PREFIX = "AIRFLOW_VAR_"
+yahoo_app_password=os.environ.get(VAR_ENV_PREFIX + "YAHOO_APP_PASSWORD")
 # def generate_pdf_report(data,reportpath):
 #     """
 #     Generates a simple PDF report using reportlab
@@ -72,8 +74,6 @@ def send_email_with_attachment(file_path):
     
     try:
         server = smtplib.SMTP_SSL('smtp.mail.yahoo.com', 465)
-        yahoo_app_password = secrets.get_variable(key="YAHOO_APP_PASSWORD")
-
         server.login(sender_email, yahoo_app_password)  # Replace with generated App Password
         text = msg.as_string()
         # Attach CSV file
