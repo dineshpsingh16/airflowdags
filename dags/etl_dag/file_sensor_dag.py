@@ -49,7 +49,7 @@ process_file = BashOperator(
     bash_command=f"""
     source /home/airflow/.local/bin/activate && \
     python {dags_folder}/etl_dag/process_file.py && \
-    deactivate 
+    /home/airflow/.local/bin/deactivate 
     """,
     dag=dag,
 )
