@@ -44,20 +44,28 @@ file_sensor = FileSensor(
 )
 
 # Define the BashOperator task to create a unique virtual environment, install Pandas, and process the file
+# process_file = BashOperator(
+#     task_id='process_file',
+#     bash_command=f"""
+#     source $VENV_DIR/bin/activate && \
+#     python {dags_folder}/etl_dag/process_file.py && \
+#     deactivate && 
+#     """,
+#     dag=dag,
+# )
+
 process_file = BashOperator(
     task_id='process_file',
     bash_command=f"""
-    VENV_DIR=/tmp/venv_check_for_file_process_file_{random_string} && \
-    python3 -m venv $VENV_DIR && \
-    source $VENV_DIR/bin/activate && \
-    pip install pandas reportlab && \
-    python {dags_folder}/etl_dag/process_file.py && \
-    deactivate && \
-    rm -rf $VENV_DIR
+    bash_command="""
+    echo "VENV_DIR: $VENV_DIR"  # Print with label for better readability
+    echo "AIRFLOW_HOME: $AIRFLOW_HOME"  # Print with label
+
+    # Use grep with full option names for clarity
+    grep --ignore-case "python" "$AIRFLOW_HOME/airflow.cfg"
     """,
     dag=dag,
 )
-
 # Optional: Define the end task
 end_task = DummyOperator(
     task_id='end',
