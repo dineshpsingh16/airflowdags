@@ -6,6 +6,10 @@ from airflow.contrib.sensors.file_sensor import FileSensor
 import logging
 import os
 from airflow.configuration import conf
+import random
+import string
+chars = string.ascii_letters + string.digits
+random_string = ''.join(random.choice(chars) for _ in range(8))
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 dags_folder = conf.get('core', 'dags_folder')
@@ -43,7 +47,7 @@ file_sensor = FileSensor(
 process_file = BashOperator(
     task_id='process_file',
     bash_command=f"""
-    VENV_DIR=/tmp/venv_{{ ti.dag_id }}_{{ ti.task_id }} && \
+    VENV_DIR=/tmp/venv_check_for_file_process_file_{random_string} && \
     python3 -m venv $VENV_DIR && \
     source $VENV_DIR/bin/activate && \
     pip install pandas reportlab && \
