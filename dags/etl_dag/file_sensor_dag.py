@@ -115,7 +115,7 @@ file_sensor = FileSensor(
 )
 
 # Function to call process_file.py
-def process_file_fn():
+def process_file_fn(dags_folder):
     import subprocess
     import os
     script_path = os.path.join(dags_folder, 'etl_dag', 'process_file.py')
@@ -129,6 +129,7 @@ process_file = PythonVirtualenvOperator(
     python_callable=process_file_fn,
     requirements=["pandas"],  # Add other requirements if needed
     system_site_packages=False,
+     op_args=[dags_folder],
     dag=dag,
 )
 
