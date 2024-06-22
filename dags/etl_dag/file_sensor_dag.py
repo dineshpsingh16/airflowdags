@@ -60,9 +60,9 @@ process_file = BashOperator(
     bash_command="""
     echo "VENV_DIR: $VENV_DIR"  # Print with label for better readability
     echo "AIRFLOW_HOME: $AIRFLOW_HOME"  # Print with label
-
+    cat $AIRFLOW_HOME/airflow.cfg
     # Use grep with full option names for clarity
-    grep --ignore-case python $AIRFLOW_HOME/airflow.cfg
+    # grep --ignore-case python $AIRFLOW_HOME/airflow.cfg
     """,
     dag=dag,
 )
