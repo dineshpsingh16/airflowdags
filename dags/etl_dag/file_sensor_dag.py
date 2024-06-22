@@ -61,6 +61,7 @@ process_file = BashOperator(
     echo "VENV_DIR: $VENV_DIR"  # Print with label for better readability
     echo "AIRFLOW_HOME: $AIRFLOW_HOME"  # Print with label
     cat $AIRFLOW_HOME/airflow.cfg
+    airflow config get
     # Use grep with full option names for clarity
     # grep --ignore-case python $AIRFLOW_HOME/airflow.cfg
     """,
