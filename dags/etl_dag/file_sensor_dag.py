@@ -57,7 +57,7 @@ file_sensor = FileSensor(
 process_file = BashOperator(
     task_id='process_file',
     bash_command=f"""
-    pwd && ls -ltr 
+    pwd && ls -ltr && ls {dags_folder}
     """,
     dag=dag,
 )
