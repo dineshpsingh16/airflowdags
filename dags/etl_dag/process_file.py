@@ -76,7 +76,7 @@ def send_email_with_attachment(file_path):
     
     try:
         server = smtplib.SMTP_SSL('smtp-relay.brevo.com', 465)
-        server.starttls()
+        # server.starttls()
         server.login(EMAIL_SEND_LOGIN, EMAIL_SEND_PASSWORD)  # Replace with generated App Password
         text = msg.as_string()
         # Attach CSV file
