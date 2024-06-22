@@ -8,36 +8,36 @@ from email.mime.text import MIMEText
 from email import encoders
 import os
 from airflow import secrets
-# from reportlab.pdfgen import canvas  # Install reportlab library: pip install reportlab
+from reportlab.pdfgen import canvas  # Install reportlab library: pip install reportlab
 
-# def generate_pdf_report(data,reportpath):
-#     """
-#     Generates a simple PDF report using reportlab
-#     You can customize this function to create your desired report layout
-#     """
+def generate_pdf_report(data,reportpath):
+    """
+    Generates a simple PDF report using reportlab
+    You can customize this function to create your desired report layout
+    """
 
-#     # Create a new PDF document
-#     # pdf = canvas.Canvas(reportpath)
+    # Create a new PDF document
+    # pdf = canvas.Canvas(reportpath)
 
-#     # Set title and other formatting options
-#     pdf.setFont("Helvetica", 16)
-#     pdf.drawString(100, 700, "Processed CSV Data Report")
+    # Set title and other formatting options
+    pdf.setFont("Helvetica", 16)
+    pdf.drawString(100, 700, "Processed CSV Data Report")
 
-#     # Add table headers
-#     pdf.drawString(50, 650, "Column 1")
-#     pdf.drawString(250, 650, "Column 2")
-#     # ... (add more headers if needed)
+    # Add table headers
+    pdf.drawString(50, 650, "Column 1")
+    pdf.drawString(250, 650, "Column 2")
+    # ... (add more headers if needed)
 
-#     # Write data from DataFrame
-#     y_pos = 600
-#     for index, row in data.iterrows():
-#         pdf.drawString(50, y_pos, str(row[0]))  # Access first column data
-#         pdf.drawString(250, y_pos, str(row[1]))  # Access second column data
-#         # ... (add more data access for other columns)
-#         y_pos -= 20
+    # Write data from DataFrame
+    y_pos = 600
+    for index, row in data.iterrows():
+        pdf.drawString(50, y_pos, str(row[0]))  # Access first column data
+        pdf.drawString(250, y_pos, str(row[1]))  # Access second column data
+        # ... (add more data access for other columns)
+        y_pos -= 20
 
-#     # Save the PDF document
-#     pdf.save()
+    # Save the PDF document
+    pdf.save()
 
 def process_csv():
     input_path = '/usr/local/airflow/dags/data/etl_file_input.csv'
@@ -51,7 +51,7 @@ def process_csv():
     
     # Save the dataframe to a new CSV file
     df.to_csv(output_path, index=False)
-    # generate_pdf_report(df.copy(),reportpath) 
+    generate_pdf_report(df.copy(),reportpath) 
     # Send email with attachment
     send_email_with_attachment(output_path)
     os.remove(input_path)
