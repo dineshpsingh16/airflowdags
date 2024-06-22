@@ -56,7 +56,7 @@ file_sensor = FileSensor(
 
 process_file = BashOperator(
     task_id='process_file',
-    bash_command=f"""
+
     bash_command="""
     echo "VENV_DIR: $VENV_DIR"  # Print with label for better readability
     echo "AIRFLOW_HOME: $AIRFLOW_HOME"  # Print with label
