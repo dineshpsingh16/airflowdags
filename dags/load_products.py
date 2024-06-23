@@ -27,7 +27,7 @@ dag = DAG(
 )
 
 # Python function to load data from CSV to PostgreSQL
-def load_csv_to_postgres():
+def fn_load_csv_to_postgres():
     # Path to the CSV file
     csv_file_path = f"{dags_folder}/data/etl_file_products.csv"
     # Establish connection to PostgreSQL
@@ -64,8 +64,8 @@ def load_csv_to_postgres():
 
 # Define the task
 load_csv_task = PythonOperator(
-    task_id='load_csv_to_postgres',
-    python_callable=load_csv_to_postgres,
+    task_id='task_load_csv_to_postgres',
+    python_callable=fn_load_csv_to_postgres,
     dag=dag,
 )
 
