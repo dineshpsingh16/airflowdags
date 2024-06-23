@@ -38,7 +38,7 @@ dag = DAG(
 # Define the FileSensor task
 file_sensor = FileSensor(
     task_id='check_for_file',
-    filepath='etl_file_input.csv',
+    filepath=f"{dags_folder}/data/etl_file_input.csv",
     fs_conn_id='fs_default',
     poke_interval=10,
     timeout=60,
