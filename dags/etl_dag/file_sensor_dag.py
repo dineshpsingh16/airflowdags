@@ -49,11 +49,103 @@ file_sensor = FileSensor(
 def process_file_fn(dags_folder):
     import subprocess
     import os
+    import pandas as pd
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.base import MIMEBase
+    from email.mime.text import MIMEText
+    from email import encoders
+    import os
+    from airflow import secrets
+    from airflow.configuration import conf
+    from traceback import print_exc
+    from reportlab.pdfgen import canvas  # Install reportlab library: pip install reportlab
+    dags_folder = conf.get('core', 'dags_folder')
+    VAR_ENV_PREFIX = "AIRFLOW_VAR_"
+    EMAIL_SEND_PASSWORD=os.environ.get(VAR_ENV_PREFIX + "EMAIL_SEND_PASSWORD")
+    EMAIL_SEND_LOGIN=os.environ.get(VAR_ENV_PREFIX + "EMAIL_SEND_LOGIN")    
     script_path = os.path.join(dags_folder, 'etl_dag', 'process_file.py')
-    result = subprocess.run(['python', script_path], capture_output=True, text=True)
-    if result.returncode != 0:
-        raise Exception(f"Script {script_path} failed with error: {result.stderr}")
+    def generate_pdf_report(data,reportpath):
+        """
+        Generates a simple PDF report using reportlab
+        You can customize this function to create your desired report layout
+        """
 
+        # Create a new PDF document
+        pdf = canvas.Canvas(reportpath)
+
+        # Set title and other formatting options
+        pdf.setFont("Helvetica", 16)
+        pdf.drawString(100, 700, "Processed CSV Data Report")
+
+        # Add table headers
+        pdf.drawString(50, 650, "Column 1")
+        pdf.drawString(250, 650, "Column 2")
+        # ... (add more headers if needed)
+
+        # Write data from DataFrame
+        y_pos = 600
+        for index, row in data.iterrows():
+            pdf.drawString(50, y_pos, str(row[0]))  # Access first column data
+            pdf.drawString(250, y_pos, str(row[1]))  # Access second column data
+            # ... (add more data access for other columns)
+            y_pos -= 20
+
+        # Save the PDF document
+        pdf.save()
+
+    def process_csv():
+        input_path = f"{dags_folder}/data/etl_file_input.csv"
+        output_path = f"{dags_folder}/data/etl_file_output.csv"
+        reportpath = '/usr/local/airflow/dags/data/etl_file_output.csv'
+        # Load the CSV file
+        df = pd.read_csv(input_path)
+        
+        # Here you can add any processing to the dataframe if needed
+        # For now, we just save it to the output file
+        
+        # Save the dataframe to a new CSV file
+        # df.to_csv(output_path, index=False)
+        generate_pdf_report(df.copy(),reportpath) 
+        # Send email with attachment
+        send_email_with_attachment(input_path)
+        # os.remove(input_path)
+        # os.remove(output_path)
+        # os.remove(reportpath)
+    def send_email_with_attachment(file_path):
+        sender_email = "dineshpsingh16@gmail.com"  # Replace with your Yahoo email
+        receiver_email = "dineshpsingh@yahoo.com"
+        subject = "Processed CSV File"
+        body = "Please find the attached processed CSV file."
+        
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = receiver_email
+        msg['Subject'] = subject
+        
+        
+        try:
+            server = smtplib.SMTP_SSL('smtp-relay.brevo.com', 465)
+            # server.starttls()
+            server.login(EMAIL_SEND_LOGIN, EMAIL_SEND_PASSWORD)  # Replace with generated App Password
+            text = msg.as_string()
+            # Attach CSV file
+            with open(file_path, "rb") as attachment:
+                part = MIMEBase('application', 'octet-stream')
+                part.set_payload(attachment.read())
+                encoders.encode_base64(part)
+                part.add_header('Content-Disposition', f"attachment; filename= {os.path.basename(file_path)}")
+                msg.attach(part)        
+            server.sendmail(sender_email, receiver_email, text)
+            server.quit()
+        except Exception as e:
+            print(f"Failed to send email: {e}")
+            print_exc()
+
+        result = subprocess.run(['python', script_path], capture_output=True, text=True)
+        if result.returncode != 0:
+            raise Exception(f"Script {script_path} failed with error: {result.stderr}")
+    process_csv()
 # Define the PythonVirtualenvOperator task
 process_file = PythonVirtualenvOperator(
     task_id='process_file',
