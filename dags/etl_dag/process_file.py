@@ -48,7 +48,7 @@ def process_csv():
     import pandas as pd    
     input_path = f"{dags_folder}/data/etl_file_input.csv"
     output_path = f"{dags_folder}/data/etl_file_output.csv"
-    reportpath = '/usr/local/airflow/dags/data/etl_file_output.csv'
+    # reportpath = '/usr/local/airflow/dags/data/etl_file_output.csv'
     # Load the CSV file
     df = pd.read_csv(input_path)
     
@@ -57,7 +57,7 @@ def process_csv():
     
     # Save the dataframe to a new CSV file
     # df.to_csv(output_path, index=False)
-    generate_pdf_report(df.copy(),reportpath) 
+    # generate_pdf_report(df.copy(),reportpath) 
     # Send email with attachment
     send_email_with_attachment(input_path)
     # os.remove(input_path)
