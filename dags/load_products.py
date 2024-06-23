@@ -2,8 +2,7 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime
 import os
-from airflow.configuration import conf
-dags_folder = conf.get('core', 'dags_folder')
+
 # Default arguments for the DAG
 default_args = {
     'owner': 'airflow',
@@ -23,8 +22,10 @@ dag = DAG(
 )
 
 # Function to call the external script
-def process_file_fn(dags_folder):
+def process_file_fn():
     import subprocess
+    from airflow.configuration import conf
+    dags_folder = conf.get('core', 'dags_folder')    
     script_path = os.path.join(dags_folder, 'etl_dag', 'process_load_file.py')
     result = subprocess.run(['python3', script_path], capture_output=True, text=True)
     if result.returncode != 0:
@@ -33,8 +34,6 @@ def process_file_fn(dags_folder):
 # Define the task
 load_csv_task = PythonOperator(
     task_id='load_csv_to_postgres',
-    python_callable=process_file_fn,
-    op_args=dags_folder,  # Adjust the path to your Airflow DAGs folder
     dag=dag,
 )
 
