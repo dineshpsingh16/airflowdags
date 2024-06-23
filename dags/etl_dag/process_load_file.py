@@ -2,10 +2,11 @@
 
 import csv
 import os
-from airflow.hooks.postgres_hook import PostgresHook
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.configuration import conf
 dags_folder = conf.get('core', 'dags_folder')
 def load_csv_to_postgres(csv_file_path, postgres_conn_id):
+    connection = None
     try:
         # Establish connection to PostgreSQL using Airflow's PostgresHook
         pg_hook = PostgresHook(postgres_conn_id=postgres_conn_id)
@@ -40,10 +41,13 @@ def load_csv_to_postgres(csv_file_path, postgres_conn_id):
         connection.close()
         print("Data loaded successfully.")
     except Exception as e:
-        if connection:
+       print(f"Error: {e}")
+       if connection:
             connection.rollback()
-        print(f"Error: {e}")
-        raise
+       raise
+    finally:
+        if connection:
+            connection.close()
 
 if __name__ == "__main__":
     # Define the path to the CSV file
