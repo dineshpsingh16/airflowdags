@@ -32,7 +32,7 @@ def process_file_fn():
 
 # Define the task
 load_csv_task = PythonOperator(
-    task_id='load_csv_to_postgres',
+    task_id='loadcsvtopostgres',
     python_callable=process_file_fn,
     dag=dag,
 )
