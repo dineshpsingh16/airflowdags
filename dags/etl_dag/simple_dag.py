@@ -1,4 +1,4 @@
-from datetime import timedelta,datetime
+import datetime
 import json
 from airflow import DAG
 from airflow.operators.bash import BashOperator
