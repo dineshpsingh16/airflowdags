@@ -88,7 +88,7 @@ with DAG(
     # Wait for a specific time before proceeding
     wait_for_time = TimeSensor(
         task_id='wait_for_time',
-        timeout=1,
+        timeout=10,
         soft_fail=True,        
         target_time=(datetime.now(tz=timezone.utc) + timedelta(seconds=5)).time()
 
