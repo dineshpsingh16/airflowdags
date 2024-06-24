@@ -5,7 +5,8 @@ from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.http.operators.http import HttpOperator
 from airflow.operators.email import EmailOperator
-from airflow.sensors.time_sensor import TimeSensor
+# from airflow.sensors.time_sensor import TimeSensor
+from airflow.sensors.time_delta import TimeDeltaSensor
 from airflow.operators.python_operator import PythonVirtualenvOperator
 from airflow.utils.dates import days_ago
 def process_file_fn_download_and_transform():
@@ -86,14 +87,18 @@ with DAG(
 ) as dag:
 
     # Wait for a specific time before proceeding
-    wait_for_time = TimeSensor(
-        task_id='wait_for_time',
-        timeout=10,
-        soft_fail=True,        
-        target_time=(datetime.now(tz=timezone.utc) + timedelta(seconds=5)).time()
+    # wait_for_time = TimeSensor(
+    #     task_id='wait_for_time',
+    #     timeout=10,
+    #     soft_fail=True,        
+    #     target_time=(datetime.now(tz=timezone.utc) + timedelta(seconds=5)).time()
 
-    )
+    # )
 
+    wait_for_time = TimeDeltaSensor(
+        task_id="wait_some_seconds", 
+        delta=timedelta(seconds=2)
+        )
     # Download a file from S3 and transform it (replace placeholders)
     # download_and_transform = S3FileTransformOperator(
     #     task_id='download_and_transform',
