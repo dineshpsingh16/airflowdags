@@ -70,13 +70,12 @@ default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
     'email': ['airflow@example.com'],  # Replace with your recipient email(s)
-    'email_on_failure': True,
+    'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
     'retry_delay': timedelta(seconds=5),
-    'execution_timeout': timedelta(seconds=10),
+    'execution_timeout': timedelta(minutes=1),  # Increased timeout for the task
 }
-
 # Define the DAG
 with DAG(
     dag_id='example_dag_various_operators',
