@@ -88,7 +88,7 @@ with DAG(
     # Wait for a specific time before proceeding
     wait_for_time = TimeSensor(
         task_id='wait_for_time',
-        target_time=datetime(year=2024, month=6, day=23, hour=8, minute=00),  # Adjust time as needed
+        target_time=(datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(seconds=5)).time(),
     )
 
     # Download a file from S3 and transform it (replace placeholders)
