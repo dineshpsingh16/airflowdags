@@ -37,3 +37,12 @@ dag.doc_md = __doc__
 #     dag=dag)
 
 # sensor
+task_post_op = HttpOperator(
+    task_id="post_op",
+    endpoint="post",
+    data=json.dumps({"priority": 5}),
+    headers={"Content-Type": "application/json"},
+    response_check=lambda response: response.json()["json"]["priority"] == 5,
+    dag=dag,
+)
+task_post_op
