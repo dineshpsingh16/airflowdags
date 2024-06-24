@@ -32,14 +32,22 @@ with DAG(
     start_date=days_ago(1),
     schedule_interval=None,  # Run manually
 ) as dag:
-    target_time = (datetime.now(timezone.ist) + timedelta(seconds=5)).time()
-    logger.info(f"Target time for TimeSensor: {target_time}")
+    # Get current IST time
+    ist_timezone = timezone('Asia/Kolkata')
+    current_time_ist = datetime.now(ist_timezone)
+
+    # Add 5 seconds to IST time
+    target_time_ist = (current_time_ist + timedelta(seconds=5)).time()
+
+    # Print the target time in IST format
+    print(target_time_ist)    
+    logger.info(f"Target time for TimeSensor: {target_time_ist}")
 
     wait_for_time = TimeSensor(
         task_id='wait_for_time',
         timeout=10,
         soft_fail=True,
-        target_time=target_time,
+        target_time=target_time_ist,
     )
 
     # Example downstream task (if any)
