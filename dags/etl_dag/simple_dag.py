@@ -138,8 +138,8 @@ with DAG(
     call_api = HttpOperator(
         task_id='call_api',
         http_conn_id='my_api_connection',  # Replace with your connection ID
-        endpoint='/api/v1/data',
-        method='POST',
+        endpoint='/v1/domains/search?domain=postman&zone=com',
+        method='GET',
         data=json.dumps({'data': 'processed_data'}),  # Replace with your data
     )
 
