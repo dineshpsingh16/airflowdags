@@ -3,12 +3,11 @@ from datetime import timedelta
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-
 from airflow.providers.http.operators.http import HttpOperator
-from airflow.providers.email.operators.email import EmailOperator
+# from airflow.providers.email.operators.email import EmailOperator
 from airflow.sensors.time import TimeSensor
 from airflow.utils.dates import days_ago
-def process_file_fn_download_and_transform(dags_folder):
+def process_file_fn_download_and_transform():
     import pandas as pd
     import boto3
 
@@ -22,7 +21,7 @@ def process_file_fn_download_and_transform(dags_folder):
     s3_client = boto3.client('s3')
 
     # Download file from S3
-    source_file_path = f'{dags_folder}/{source_key}'
+    source_file_path = f'/{source_key}'
     s3_client.download_file(source_bucket, source_key, source_file_path)
 
     # Process the file (example: read CSV and transform)
@@ -37,6 +36,33 @@ def process_file_fn_download_and_transform(dags_folder):
     # Upload the transformed file back to S3
     s3_client.upload_file(dest_file_path, dest_bucket, dest_key)
 
+def process_send_email():
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    sender_email = "your_email@example.com"
+    receiver_email = "recipient@example.com"
+    subject = "File Processing Complete"
+    body = f"The file {source_key} has been processed and uploaded to {dest_bucket}/{dest_key}."
+
+    msg = MIMEMultipart()
+    msg["From"] = sender_email
+    msg["To"] = receiver_email
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "plain"))
+
+    # Send the email using the SMTP server configured in Airflow
+    smtp_server = "smtp.your-email-provider.com"
+    smtp_port = 587
+    smtp_user = "your_email@example.com"
+    smtp_password = "your_password"
+
+    server = smtplib.SMTP(smtp_server, smtp_port)
+    server.starttls()
+    server.login(smtp_user, smtp_password)
+    server.sendmail(sender_email, receiver_email, msg.as_string())
+    server.quit()
 # Default arguments for all tasks
 default_args = {
     'owner': 'airflow',
@@ -73,7 +99,7 @@ with DAG(
     #     dest_bucket='my-destination-bucket',
     #     transform_script='/path/to/transform_script.sh',  # Replace with your script path
     # )
-
+# apache-airflow-providers-email
     download_and_transform = PythonVirtualenvOperator(
         task_id='download_and_transform',
         python_callable=process_file_fn_download_and_transform,
@@ -109,13 +135,19 @@ with DAG(
             message = 'DAG execution failed!'
         send_email(message)
 
-    send_email = EmailOperator(
-        task_id='send_email',
-        to='recipient@example.com',  # Replace with recipient email
-        subject='Airflow DAG: {{ ti.xcom_pull(task_ids="call_api") }}',
-        html_content=send_email_notification,
-        trigger_rule='all_done',  # Send email after all tasks are done
+    # send_email = EmailOperator(
+    #     task_id='send_email',
+    #     to='recipient@example.com',  # Replace with recipient email
+    #     subject='Airflow DAG: {{ ti.xcom_pull(task_ids="call_api") }}',
+    #     html_content=send_email_notification,
+    #     trigger_rule='all_done',  # Send email after all tasks are done
+    # )
+    send_email = PythonVirtualenvOperator(
+        task_id='send_email_task',
+        python_callable=process_send_email,
+        requirements=["pandas","boto3"],  # Add other requirements if needed
+        system_site_packages=False,
+        dag=dag,
     )
-
 # Set task dependencies
 wait_for_time >> download_and_transform >> process_data_task >> call_api >> send_email
