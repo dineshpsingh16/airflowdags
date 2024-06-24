@@ -3,7 +3,7 @@ from datetime import timedelta
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-from airflow.providers.amazon.aws.operators.s3_file_transform import S3FileTransformOperator
+
 from airflow.providers.http.operators.http import HttpOperator
 from airflow.providers.email.operators.email import EmailOperator
 from airflow.sensors.time import TimeSensor
