@@ -1,4 +1,4 @@
-from datetime import timedelta,timezone,datetime
+from datetime import timedelta, timezone, datetime
 import json
 from airflow import DAG
 from airflow.operators.bash import BashOperator
@@ -6,7 +6,7 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.http.operators.http import HttpOperator
 from airflow.operators.email import EmailOperator
 from airflow.sensors.time_sensor import TimeSensor
-from airflow.operators.python_operator import PythonVirtualenvOperator
+from airflow.operators.python import PythonVirtualenvOperator
 from airflow.utils.dates import days_ago
 
 default_args = {
@@ -30,8 +30,8 @@ with DAG(
     wait_for_time = TimeSensor(
         task_id='wait_for_time',
         timeout=10,
-        soft_fail=True,        
-        target_time=(datetime.now(tz=timezone.utc) + timedelta(seconds=5)).time()
-
-    )    
+        soft_fail=True,
+        target_time=(datetime.now(timezone.utc) + timedelta(seconds=5)).time()
+    )
+    
     wait_for_time
