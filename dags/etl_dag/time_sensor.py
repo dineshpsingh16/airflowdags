@@ -1,15 +1,10 @@
 from datetime import timedelta, datetime
 from pytz import timezone
-import json
-from airflow import DAG
-from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
-from airflow.providers.http.operators.http import HttpOperator
-from airflow.operators.email import EmailOperator
-from airflow.sensors.time_sensor import TimeSensor
-from airflow.operators.python import PythonVirtualenvOperator
-from airflow.utils.dates import days_ago
 import logging
+from airflow import DAG
+from airflow.operators.bash_operator import BashOperator
+from airflow.sensors.time_sensor import TimeSensor
+from airflow.utils.dates import days_ago
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -41,7 +36,7 @@ with DAG(
     target_time_ist = (current_time_ist + timedelta(seconds=5)).time()
 
     # Print the target time in IST format
-    print(target_time_ist)    
+    logger.info(f"Current time IST: {current_time_ist}")
     logger.info(f"Target time for TimeSensor: {target_time_ist}")
 
     wait_for_time = TimeSensor(
