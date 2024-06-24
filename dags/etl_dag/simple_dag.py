@@ -6,6 +6,7 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.http.operators.http import HttpOperator
 from airflow.operators.email import EmailOperator
 from airflow.sensors.time_sensor import TimeSensor
+from airflow.operators.python_operator import PythonVirtualenvOperator
 from airflow.utils.dates import days_ago
 def process_file_fn_download_and_transform():
     import pandas as pd
