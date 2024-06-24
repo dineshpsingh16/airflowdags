@@ -13,30 +13,34 @@ def process_file_fn_download_and_transform():
     import pandas as pd
     import boto3
 
-    # Define S3 paths and bucket names
-    source_bucket = 'my-source-bucket'
-    source_key = 'my-source-file.csv'
-    dest_bucket = 'my-dest-bucket'
-    dest_key = 'my-dest-file.csv'
+    try:
 
-    # Initialize S3 client
-    s3_client = boto3.client('s3')
+        # Define S3 paths and bucket names
+        source_bucket = 'my-source-bucket'
+        source_key = 'my-source-file.csv'
+        dest_bucket = 'my-dest-bucket'
+        dest_key = 'my-dest-file.csv'
 
-    # Download file from S3
-    source_file_path = f'/{source_key}'
-    s3_client.download_file(source_bucket, source_key, source_file_path)
+        # Initialize S3 client
+        s3_client = boto3.client('s3')
 
-    # Process the file (example: read CSV and transform)
-    df = pd.read_csv(source_file_path)
-    # Perform transformations on the DataFrame `df`
-    df['new_column'] = df['existing_column'] * 2  # Example transformation
+        # Download file from S3
+        source_file_path = f'/{source_key}'
+        s3_client.download_file(source_bucket, source_key, source_file_path)
 
-    # Save transformed file
-    dest_file_path = f'{dest_key}'
-    df.to_csv(dest_file_path, index=False)
+        # Process the file (example: read CSV and transform)
+        df = pd.read_csv(source_file_path)
+        # Perform transformations on the DataFrame `df`
+        df['new_column'] = df['existing_column'] * 2  # Example transformation
 
-    # Upload the transformed file back to S3
-    s3_client.upload_file(dest_file_path, dest_bucket, dest_key)
+        # Save transformed file
+        dest_file_path = f'{dest_key}'
+        df.to_csv(dest_file_path, index=False)
+
+        # Upload the transformed file back to S3
+        s3_client.upload_file(dest_file_path, dest_bucket, dest_key)
+    except:
+        pass
 
 def process_send_email():
     import smtplib
@@ -60,10 +64,14 @@ def process_send_email():
     smtp_user = "your_email@example.com"
     smtp_password = "your_password"
 
-    server = smtplib.SMTP(smtp_server, smtp_port)
-    server.starttls()
-    server.login(smtp_user, smtp_password)
-    server.sendmail(sender_email, receiver_email, msg.as_string())
+    try:
+
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(smtp_user, smtp_password)
+        server.sendmail(sender_email, receiver_email, msg.as_string())
+    except:
+        pass
     server.quit()
 # Default arguments for all tasks
 default_args = {
