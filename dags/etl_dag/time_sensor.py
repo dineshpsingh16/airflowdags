@@ -3,7 +3,8 @@ from pytz import timezone
 import logging
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
-from airflow.sensors.time_sensor import TimeSensor
+# from airflow.sensors.time_sensor import TimeSensor
+from airflow.sensors.time_delta import TimeDeltaSensor
 from airflow.utils.dates import days_ago
 
 # Configure logging
@@ -39,13 +40,16 @@ with DAG(
     logger.info(f"Current time IST: {current_time_ist.strftime('%Y-%m-%d %H:%M:%S %Z%z')}")
     logger.info(f"Target time for TimeSensor: {target_time_ist}")
 
-    wait_for_time = TimeSensor(
-        task_id='wait_for_time',
-        timeout=60,  # Increased timeout for the sensor
-        soft_fail=True,
-        target_time=target_time_ist,
-    )
-
+    # wait_for_time = TimeSensor(
+    #     task_id='wait_for_time',
+    #     timeout=60,  # Increased timeout for the sensor
+    #     soft_fail=True,
+    #     target_time=target_time_ist,
+    # )
+    wait_for_time = TimeDeltaSensor(
+        task_id="wait_some_seconds", 
+        delta=timedelta(seconds=2)
+        )
     # Example downstream task (if any)
     dummy_task = BashOperator(
         task_id='dummy_task',
