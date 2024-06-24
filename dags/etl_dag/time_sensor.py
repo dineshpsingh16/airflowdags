@@ -32,7 +32,7 @@ with DAG(
     start_date=days_ago(1),
     schedule_interval=None,  # Run manually
 ) as dag:
-    target_time = (datetime.now(timezone.utc) + timedelta(seconds=5)).time()
+    target_time = (datetime.now(timezone.ist) + timedelta(seconds=5)).time()
     logger.info(f"Target time for TimeSensor: {target_time}")
 
     wait_for_time = TimeSensor(
