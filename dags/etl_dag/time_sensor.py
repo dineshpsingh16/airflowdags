@@ -16,9 +16,9 @@ default_args = {
     'email': ['airflow@example.com'],  # Replace with your recipient email(s)
     'email_on_failure': False,
     'email_on_retry': False,
-    'retries': 10,
-    'retry_delay': timedelta(seconds=1),
-    'execution_timeout': timedelta(seconds=10),
+    'retries': 1,
+    'retry_delay': timedelta(seconds=5),
+    'execution_timeout': timedelta(minutes=1),  # Increased timeout for the task
 }
 
 with DAG(
@@ -31,17 +31,17 @@ with DAG(
     # Get current IST time
     ist_timezone = timezone('Asia/Kolkata')
     current_time_ist = datetime.now(ist_timezone)
-
+    
     # Add 5 seconds to IST time
     target_time_ist = (current_time_ist + timedelta(seconds=5)).time()
 
-    # Print the target time in IST format
-    logger.info(f"Current time IST: {current_time_ist}")
+    # Print the current and target times in IST format
+    logger.info(f"Current time IST: {current_time_ist.strftime('%Y-%m-%d %H:%M:%S %Z%z')}")
     logger.info(f"Target time for TimeSensor: {target_time_ist}")
 
     wait_for_time = TimeSensor(
         task_id='wait_for_time',
-        timeout=10,
+        timeout=60,  # Increased timeout for the sensor
         soft_fail=True,
         target_time=target_time_ist,
     )
