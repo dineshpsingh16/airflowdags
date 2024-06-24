@@ -27,13 +27,13 @@ dag.doc_md = __doc__
 
 # t1, t2 and t3 are examples of tasks created by instatiating operators
 
-sensor = HttpSensor(
-    task_id='http_sensor_check',
-    conn_id='http_connection',
-    endpoint='',
-    params={},
-    response_check=lambda response: True if "Google" in response.content else False,
-    poke_interval=5,
-    dag=dag)
+# sensor = HttpSensor(
+#     task_id='http_sensor_check',
+#     conn_id='http_connection',
+#     endpoint='',
+#     params={},
+#     response_check=lambda response: True if "Google" in response.content else False,
+#     poke_interval=5,
+#     dag=dag)
 
-sensor
+# sensor
