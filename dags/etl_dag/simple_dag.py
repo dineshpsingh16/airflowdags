@@ -8,6 +8,34 @@ from airflow.providers.http.operators.http import HttpOperator
 from airflow.providers.email.operators.email import EmailOperator
 from airflow.sensors.time import TimeSensor
 from airflow.utils.dates import days_ago
+def process_file_fn_download_and_transform(dags_folder):
+    import pandas as pd
+    import boto3
+
+    # Define S3 paths and bucket names
+    source_bucket = 'my-source-bucket'
+    source_key = 'my-source-file.csv'
+    dest_bucket = 'my-dest-bucket'
+    dest_key = 'my-dest-file.csv'
+
+    # Initialize S3 client
+    s3_client = boto3.client('s3')
+
+    # Download file from S3
+    source_file_path = f'{dags_folder}/{source_key}'
+    s3_client.download_file(source_bucket, source_key, source_file_path)
+
+    # Process the file (example: read CSV and transform)
+    df = pd.read_csv(source_file_path)
+    # Perform transformations on the DataFrame `df`
+    df['new_column'] = df['existing_column'] * 2  # Example transformation
+
+    # Save transformed file
+    dest_file_path = f'{dags_folder}/{dest_key}'
+    df.to_csv(dest_file_path, index=False)
+
+    # Upload the transformed file back to S3
+    s3_client.upload_file(dest_file_path, dest_bucket, dest_key)
 
 # Default arguments for all tasks
 default_args = {
@@ -37,15 +65,22 @@ with DAG(
     )
 
     # Download a file from S3 and transform it (replace placeholders)
-    download_and_transform = S3FileTransformOperator(
-        task_id='download_and_transform',
-        source_s3_key='data/raw/input.csv',
-        source_bucket='my-source-bucket',
-        dest_s3_key='data/processed/output.csv',
-        dest_bucket='my-destination-bucket',
-        transform_script='/path/to/transform_script.sh',  # Replace with your script path
-    )
+    # download_and_transform = S3FileTransformOperator(
+    #     task_id='download_and_transform',
+    #     source_s3_key='data/raw/input.csv',
+    #     source_bucket='my-source-bucket',
+    #     dest_s3_key='data/processed/output.csv',
+    #     dest_bucket='my-destination-bucket',
+    #     transform_script='/path/to/transform_script.sh',  # Replace with your script path
+    # )
 
+    download_and_transform = PythonVirtualenvOperator(
+        task_id='download_and_transform',
+        python_callable=process_file_fn_download_and_transform,
+        requirements=["pandas","boto3"],  # Add other requirements if needed
+        system_site_packages=False,
+        dag=dag,
+    )
     # Call a Python function to perform custom logic
     def process_data(**kwargs):
         # Your custom data processing logic here
