@@ -1,4 +1,5 @@
 import datetime
+from datetime import timedelta,timezone
 import json
 from airflow import DAG
 from airflow.operators.bash import BashOperator
@@ -31,7 +32,7 @@ def process_file_fn_download_and_transform():
     df['new_column'] = df['existing_column'] * 2  # Example transformation
 
     # Save transformed file
-    dest_file_path = f'{dags_folder}/{dest_key}'
+    dest_file_path = f'{dest_key}'
     df.to_csv(dest_file_path, index=False)
 
     # Upload the transformed file back to S3
@@ -45,7 +46,7 @@ def process_send_email():
     sender_email = "your_email@example.com"
     receiver_email = "recipient@example.com"
     subject = "File Processing Complete"
-    body = f"The file {source_key} has been processed and uploaded to {dest_bucket}/{dest_key}."
+    body = f"The file  has been processed and uploaded to {dest_bucket}/{dest_key}."
 
     msg = MIMEMultipart()
     msg["From"] = sender_email
