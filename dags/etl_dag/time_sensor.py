@@ -1,4 +1,5 @@
-from datetime import timedelta, timezone, datetime
+from datetime import timedelta, datetime
+from pytz import timezone
 import json
 from airflow import DAG
 from airflow.operators.bash import BashOperator
