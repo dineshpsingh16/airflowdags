@@ -8,6 +8,11 @@ from airflow.operators.email import EmailOperator
 from airflow.sensors.time_sensor import TimeSensor
 from airflow.operators.python import PythonVirtualenvOperator
 from airflow.utils.dates import days_ago
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 default_args = {
     'owner': 'airflow',
@@ -27,11 +32,20 @@ with DAG(
     start_date=days_ago(1),
     schedule_interval=None,  # Run manually
 ) as dag:
+    target_time = (datetime.now(timezone.utc) + timedelta(seconds=5)).time()
+    logger.info(f"Target time for TimeSensor: {target_time}")
+
     wait_for_time = TimeSensor(
         task_id='wait_for_time',
         timeout=10,
         soft_fail=True,
-        target_time=(datetime.now(timezone.utc) + timedelta(seconds=5)).time()
+        target_time=target_time,
     )
-    
-    wait_for_time
+
+    # Example downstream task (if any)
+    dummy_task = BashOperator(
+        task_id='dummy_task',
+        bash_command='echo "Task executed"',
+    )
+
+    wait_for_time >> dummy_task
