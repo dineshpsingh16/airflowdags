@@ -43,7 +43,7 @@ task_post_op = HttpOperator(
     data=json.dumps({"priority": 5}),
     headers={"Content-Type": "application/json"},
     # response_check=lambda response: response.json()["json"]["priority"] == 5,
-    response_check=lambda response: (response.status_code == 200 or response.status_code == 404) 
+    response_check = lambda response: response.status_code in (200, 404)
 
     dag=dag,
 )
