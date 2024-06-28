@@ -32,6 +32,7 @@ dag = DAG(
 # Define Python functions
 def read_csv(**kwargs):
     import pandas as pd
+    import os
     # Path to the CSV file in the current DAG directory
     dag_folder = os.path.dirname(os.path.abspath(__file__))
     csv_path = os.path.join(dag_folder, 'data.csv')
