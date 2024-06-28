@@ -6,8 +6,6 @@ from airflow.operators.python import PythonOperator
 from airflow.operators.python import PythonVirtualenvOperator
 from airflow.operators.email import EmailOperator
 import subprocess
-import os
-import glob
 
 # Define default_args
 default_args = {
@@ -84,6 +82,8 @@ def process_data(**kwargs):
     print("Task 2 executed, PDF report created and path pushed to XCom")
 
 def install_wheel_packages():
+    import os
+    import glob
     requirements_path = os.path.join(dag_folder, 'requirements.txt')
     # Install packages from the requirements.txt file
     if os.path.exists(requirements_path):
