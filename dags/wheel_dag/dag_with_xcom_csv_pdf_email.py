@@ -16,8 +16,9 @@ default_args = {
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
-    'retry_delay': timedelta(minutes=5),
-    'start_date': datetime(2023, 1, 1),
+    'retry_delay': timedelta(minutes=1),
+    'catchup':False,
+    'start_date': datetime.today(),
 }
 
 # Instantiate the DAG
@@ -25,7 +26,7 @@ dag = DAG(
     'example_dag_with_xcom_csv_pdf_email',
     default_args=default_args,
     description='An example DAG with Python operators, custom packages, XCom, CSV processing, PDF report, and email notification',
-    schedule_interval=timedelta(days=1),
+    schedule_interval=None,
 )
 
 # Define Python functions
