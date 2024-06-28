@@ -47,7 +47,7 @@ def process_data(**kwargs):
     from fpdf import FPDF    
     import pandas as pd
     # Pull the dataframe from XCom
-    csv_data_json = kwargs['ti'].xcom_pull(key='csv_data', task_ids='read_csv')
+    csv_data_json = kwargs['ti'].xcom_pull(key='csv_data', task_ids='task1_fun_task')
     df = pd.read_json(csv_data_json)
     
     # Process the data (example: create a summary report)
@@ -68,13 +68,14 @@ def process_data(**kwargs):
             self.multi_cell(0, 10, body)
             self.ln()
         
-        def add_report(self, title, body):
+        def add_report(self, title, df):
             self.add_page()
             self.chapter_title(title)
-            self.chapter_body(body)
+            for index, row in df.iterrows():
+                self.chapter_body(f"{row['transaction details']} - Debit: {row['debit']} - Credit: {row['credit']} - Balance: {row['balance']}")
     
     pdf = PDF()
-    pdf.add_report('Summary', df.describe().to_string())
+    pdf.add_report('Transaction Report', df)
     pdf.output(report_file)
     
     # Push the report file path to XCom
@@ -144,6 +145,23 @@ send_email_task = PythonOperator(
     provide_context=True,
     dag=dag,
 )
+def task1_fun_operator(**kwargs):
+    from util.tasks import task1_fun
+    # Pull the CSV data from XCom
+    csv_data_json = kwargs['ti'].xcom_pull(key='csv_data', task_ids='read_csv')
+    
+    # Call task1_fun to update the CSV data with balance column
+    updated_csv_data_json = task1_fun(csv_data_json)
+    
+    # Push the updated CSV data back to XCom
+    kwargs['ti'].xcom_push(key='csv_data', value=updated_csv_data_json)
+    print("Task 1 fun executed, CSV data updated and pushed to XCom")
+task1_fun_task = PythonOperator(
+    task_id='task1_fun_task',
+    python_callable=task1_fun_operator,
+    provide_context=True,
+    dag=dag,
+)
 
 # Set task dependencies
-install_packages >> read_csv_task >> process_data_task >> send_email_task
+install_packages >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task

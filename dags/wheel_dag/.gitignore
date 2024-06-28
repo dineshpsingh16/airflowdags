@@ -1,0 +1,7 @@
+
+
+# Ignore setup.py file
+setup.py
+
+# Ignore util folder
+util/
