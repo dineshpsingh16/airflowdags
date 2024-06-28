@@ -8,9 +8,6 @@ from airflow.operators.email import EmailOperator
 import subprocess
 import os
 import glob
-import pandas as pd
-import matplotlib.pyplot as plt
-from fpdf import FPDF
 
 # Define default_args
 default_args = {
@@ -33,6 +30,7 @@ dag = DAG(
 
 # Define Python functions
 def read_csv(**kwargs):
+    import pandas as pd
     # Path to the CSV file in the current DAG directory
     dag_folder = os.path.dirname(os.path.abspath(__file__))
     csv_path = os.path.join(dag_folder, 'data.csv')
@@ -45,6 +43,9 @@ def read_csv(**kwargs):
     print("Task 1 executed, CSV data pushed to XCom")
 
 def process_data(**kwargs):
+    import matplotlib.pyplot as plt
+    from fpdf import FPDF    
+    import pandas as pd
     # Pull the dataframe from XCom
     csv_data_json = kwargs['ti'].xcom_pull(key='csv_data', task_ids='read_csv')
     df = pd.read_json(csv_data_json)
