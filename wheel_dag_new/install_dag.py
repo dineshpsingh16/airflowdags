@@ -9,7 +9,7 @@ def copy_dag_files():
     parent_dir_name = os.path.basename(current_dir)
 
     # Destination directory
-    destination_dir = os.path.abspath(os.path.join(current_dir, '../../dags', parent_dir_name))
+    destination_dir = os.path.abspath(os.path.join(current_dir, '../dags', parent_dir_name))
 
     # Ensure the destination directory exists
     os.makedirs(destination_dir, exist_ok=True)
