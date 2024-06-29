@@ -208,4 +208,4 @@ log_dags_dir_task = PythonOperator(
 )
 
 # Set task dependencies
-log_dags_dir_task >> install_packages >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
+log_dags_dir_task >> install_packages_task >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
