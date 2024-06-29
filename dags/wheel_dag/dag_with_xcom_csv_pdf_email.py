@@ -105,9 +105,10 @@ def install_wheel_packages():
 
     # Find all wheel files in the dist folder
     wheel_files = glob.glob(os.path.join(dist_folder, '*.whl'))
-
+    print(f"wheel_files : ",wheel_files)    
     # Install each wheel file
     for wheel_file in wheel_files:
+        print(f"Installing wheel package: {wheel_file}")        
         subprocess.check_call(['pip', 'install', wheel_file])
 
 # Create Python operators
