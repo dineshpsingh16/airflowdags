@@ -160,7 +160,7 @@ def send_email(**kwargs):
     
     email = EmailOperator(
         task_id='send_email',
-        to='your_email@example.com',
+        to='dineshpsingh16@gmail.com',
         subject='Airflow DAG Report',
         html_content='Please find the attached report.',
         files=[report_file],
@@ -169,7 +169,7 @@ def send_email(**kwargs):
     return email.execute(context=kwargs)
 
 send_email_task = PythonOperator(
-    task_id='send_email',
+    task_id='send_email_task',
     python_callable=send_email,
     provide_context=True,
     dag=dag,
