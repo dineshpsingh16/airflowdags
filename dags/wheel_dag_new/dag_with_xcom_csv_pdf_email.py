@@ -6,7 +6,7 @@ from airflow.operators.python import PythonOperator
 from airflow.operators.python import PythonVirtualenvOperator
 from airflow.operators.email import EmailOperator
 import subprocess
-from util.tasks import  install_requirements, read_csv, task1_fun_operator, process_data, send_email
+from wheeldagutil.tasks import  install_requirements, read_csv, task1_fun_operator, process_data, send_email
 
 # Define default_args
 default_args = {
