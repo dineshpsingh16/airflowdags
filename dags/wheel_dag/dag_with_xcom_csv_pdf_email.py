@@ -124,6 +124,8 @@ def install_requirements():
     # Install each wheel file
     for wheel_file in wheel_files:
         print(f"Installing wheel package: {wheel_file}")        
+        package_name = os.path.basename(wheel_file).split('-')[0]
+        subprocess.check_call(['pip', 'uninstall', '-y', package_name])
         subprocess.check_call(['pip', 'install', wheel_file])
     # Verify installation by listing installed packages
     installed_packages = pkg_resources.working_set
