@@ -97,6 +97,9 @@ def install_wheel_packages():
     import glob
     # Path to the dist folder in the current DAG directory
     dag_folder = os.path.dirname(os.path.abspath(__file__))
+    print(f"dag_folder :{dag_folder}")
+    dag_files = os.listdir(dag_folder)
+    print("contents of dag folder")
     dist_folder = os.path.join(dag_folder, 'wheel_dag/dist')
     requirements_path = os.path.join(dag_folder, 'wheel_dag/requirements.txt')
     print(f" requirements_path :{requirements_path}")
