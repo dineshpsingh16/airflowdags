@@ -187,6 +187,28 @@ task1_fun_task = PythonOperator(
     provide_context=True,
     dag=dag,
 )
+def log_dags_directory_contents():
+    import os
+
+    dag_folder = os.path.dirname(os.path.abspath(__file__))
+    print(f"Current directory: {dag_folder}")
+    print(f"Contents of the current directory: {os.listdir(dag_folder)}")
+
+    dist_folder = os.path.join(dag_folder, 'dist')
+    if os.path.exists(dist_folder):
+        print(f"dist folder found at: {dist_folder}")
+        dist_files = os.listdir(dist_folder)
+        if dist_files:
+            print(f"Contents of dist folder: {dist_files}")
+        else:
+            print("dist folder is empty")
+    else:
+        print("dist folder not found")
+log_dags_dir_task = PythonOperator(
+    task_id='log_dags_dir',
+    python_callable=log_dags_directory_contents,
+    dag=dag,
+)
 
 # Set task dependencies
-install_packages >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
+log_dags_dir_task >> install_packages >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
