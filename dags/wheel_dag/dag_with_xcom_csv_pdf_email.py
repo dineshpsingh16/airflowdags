@@ -102,7 +102,15 @@ def install_wheel_packages():
     # Install packages from the requirements.txt file
     if os.path.exists(requirements_path):
         subprocess.check_call(['pip', 'install', '-r', requirements_path])    
-
+    if os.path.exists(dist_folder):
+        print(f"dist folder found at: {dist_folder}")
+        dist_files = os.listdir(dist_folder)
+        if dist_files:
+            print(f"Contents of dist folder: {dist_files}")
+        else:
+            print("dist folder is empty")
+    else:
+        print("dist folder not found")
     # Find all wheel files in the dist folder
     wheel_files = glob.glob(os.path.join(dist_folder, '*.whl'))
     print(f"dist_folder :{dist_folder} ")   
