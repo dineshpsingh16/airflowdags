@@ -92,7 +92,7 @@ def process_data(**kwargs):
     kwargs['ti'].xcom_push(key='report_file', value=report_file)
     print("Task 2 executed, PDF report created and path pushed to XCom")
 
-def install_wheel_packages():
+def install_requirements():
     import os
     import glob
     # Path to the dist folder in the current DAG directory
@@ -100,8 +100,8 @@ def install_wheel_packages():
     print(f"dag_folder :{dag_folder}")
     dag_files = os.listdir(dag_folder)
     print("contents of dag folder")
-    dist_folder = os.path.join(dag_folder, 'wheel_dag/dist')
-    requirements_path = os.path.join(dag_folder, 'wheel_dag/requirements.txt')
+    dist_folder = os.path.join(dag_folder, 'dist')
+    requirements_path = os.path.join(dag_folder, 'requirements.txt')
     print(f" requirements_path :{requirements_path}")
     # Install packages from the requirements.txt file
     if os.path.exists(requirements_path):
@@ -141,14 +141,11 @@ process_data_task = PythonOperator(
 )
 
 # Install custom packages using PythonVirtualenvOperator
-install_packages = PythonVirtualenvOperator(
+install_packages_task = PythonOperator(
     task_id='install_packages',
-    python_callable=install_wheel_packages,
-    requirements=['pip'],
-    system_site_packages=True,
+    python_callable=install_requirements,
     dag=dag,
 )
-
 # Create Email operator
 def send_email(**kwargs):
     # Pull the report file path from XCom
