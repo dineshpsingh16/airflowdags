@@ -95,6 +95,7 @@ def process_data(**kwargs):
 def install_requirements():
     import os
     import glob
+    import pkg_resources
     # Path to the dist folder in the current DAG directory
     dag_folder = os.path.dirname(os.path.abspath(__file__))
     print(f"dag_folder :{dag_folder}")
@@ -124,6 +125,10 @@ def install_requirements():
     for wheel_file in wheel_files:
         print(f"Installing wheel package: {wheel_file}")        
         subprocess.check_call(['pip', 'install', wheel_file])
+    # Verify installation by listing installed packages
+    installed_packages = pkg_resources.working_set
+    for package in installed_packages:
+        print(package.key, package.version)
 
 # Create Python operators
 read_csv_task = PythonOperator(
