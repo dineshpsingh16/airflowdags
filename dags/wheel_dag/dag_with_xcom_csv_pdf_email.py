@@ -99,8 +99,10 @@ def install_wheel_packages():
     dag_folder = os.path.dirname(os.path.abspath(__file__))
     dist_folder = os.path.join(dag_folder, 'wheel_dag/dist')
     requirements_path = os.path.join(dag_folder, 'wheel_dag/requirements.txt')
+    print(f" requirements_path :{requirements_path}")
     # Install packages from the requirements.txt file
     if os.path.exists(requirements_path):
+        print("requirements_path found")
         subprocess.check_call(['pip', 'install', '-r', requirements_path])    
     if os.path.exists(dist_folder):
         print(f"dist folder found at: {dist_folder}")
