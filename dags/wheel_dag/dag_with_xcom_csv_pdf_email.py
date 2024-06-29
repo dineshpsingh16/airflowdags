@@ -175,7 +175,7 @@ send_email_task = PythonOperator(
     dag=dag,
 )
 def task1_fun_operator(**kwargs):
-    from util.tasks import task1_fun
+    from wheeldagutil.tasks import task1_fun
     # Pull the CSV data from XCom
     csv_data_json = kwargs['ti'].xcom_pull(key='csv_data', task_ids='read_csv')
     
