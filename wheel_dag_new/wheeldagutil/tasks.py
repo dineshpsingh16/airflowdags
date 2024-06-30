@@ -26,6 +26,17 @@ def task1_fun(csv_data_json):
     # Return updated DataFrame as JSON
     return df.to_json()
 
+def task1_fun_operator(**kwargs):
+    # Pull the CSV data from XCom
+    csv_data_json = kwargs['ti'].xcom_pull(key='csv_data', task_ids='read_csv')
+    
+    # Call task1_fun to update the CSV data with balance column
+    updated_csv_data_json = task1_fun(csv_data_json)
+    
+    # Push the updated CSV data back to XCom
+    kwargs['ti'].xcom_push(key='csv_data', value=updated_csv_data_json)
+    print("Task 1 fun executed, CSV data updated and pushed to XCom")
+
 def log_dags_directory_contents():
     import os
 
