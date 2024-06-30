@@ -1,11 +1,10 @@
-# /path/to/your/dag_with_xcom_csv_pdf_email.py
-
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-
 import subprocess
-# from wheeldagutil.tasks import  install_requirements, read_csv, task1_fun_operator, process_data, send_email
+import os
+import glob
+import importlib
 
 # Define default_args
 default_args = {
@@ -15,7 +14,7 @@ default_args = {
     'email_on_retry': False,
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
-    'catchup':False,
+    'catchup': False,
     'start_date': datetime.today(),
 }
 
@@ -27,24 +26,22 @@ dag = DAG(
     schedule_interval=None,
 )
 
-# Define Python functions
-
+# Define the function to install requirements
 def install_requirements():
-    import os
-    import glob
     import pkg_resources
+    
     # Path to the dist folder in the current DAG directory
     dag_folder = os.path.dirname(os.path.abspath(__file__))
     print(f"dag_folder :{dag_folder}")
-    dag_files = os.listdir(dag_folder)
-    print("contents of dag folder")
     dist_folder = os.path.join(dag_folder, 'dist')
     requirements_path = os.path.join(dag_folder, 'requirements.txt')
-    print(f" requirements_path :{requirements_path}")
+    print(f"requirements_path :{requirements_path}")
+    
     # Install packages from the requirements.txt file
     if os.path.exists(requirements_path):
         print("requirements_path found")
-        subprocess.check_call(['pip', 'install', '-r', requirements_path])    
+        subprocess.check_call(['pip', 'install', '-r', requirements_path])
+    
     if os.path.exists(dist_folder):
         print(f"dist folder found at: {dist_folder}")
         dist_files = os.listdir(dist_folder)
@@ -54,81 +51,85 @@ def install_requirements():
             print("dist folder is empty")
     else:
         print("dist folder not found")
+    
     # Find all wheel files in the dist folder
     wheel_files = glob.glob(os.path.join(dist_folder, '*.whl'))
-    print(f"dist_folder :{dist_folder} ")   
-    print(f"wheel_files : ",wheel_files)    
+    print(f"dist_folder :{dist_folder} ")
+    print(f"wheel_files : ", wheel_files)
+    
     # Install each wheel file
     for wheel_file in wheel_files:
-        print(f"Installing wheel package: {wheel_file}")        
+        print(f"Installing wheel package: {wheel_file}")
         package_name = os.path.basename(wheel_file).split('-')[0]
         subprocess.check_call(['pip', 'uninstall', '-y', package_name])
         subprocess.check_call(['pip', 'install', wheel_file])
+    
     # Verify installation by listing installed packages
     installed_packages = pkg_resources.working_set
     for package in installed_packages:
         print(package.key, package.version)
 
+# Task to log the contents of the DAG directory
+def log_dags_directory_contents():
+    dag_folder = os.path.dirname(os.path.abspath(__file__))
+    print(f"Current directory: {dag_folder}")
+    print(f"Contents of the current directory: {os.listdir(dag_folder)}")
 
-# Create Python operators
-read_csv_task = PythonOperator(
-    task_id='read_csv',
-    python_callable=lambda **kwargs: read_csv(**kwargs),
-    provide_context=True,
-    dag=dag,
-)
+# Task to load the wheeldagutil tasks
+def load_wheeldagutil_tasks():
+    global read_csv, task1_fun_operator, process_data, send_email
 
-process_data_task = PythonOperator(
-    task_id='process_data',
-    python_callable=lambda **kwargs: process_data(**kwargs),
-    provide_context=True,
-    dag=dag,
-)
+    wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
+    read_csv = wheeldagutil_tasks.read_csv
+    task1_fun_operator = wheeldagutil_tasks.task1_fun_operator
+    process_data = wheeldagutil_tasks.process_data
+    send_email = wheeldagutil_tasks.send_email
 
-# Install custom packages using PythonVirtualenvOperator
+    print("Loaded wheeldagutil tasks successfully")
+
+# Task to dynamically create tasks that depend on wheeldagutil
+def create_dependent_tasks():
+    # Read CSV task
+    read_csv_task = PythonOperator(
+        task_id='read_csv',
+        python_callable=read_csv,
+        provide_context=True,
+        dag=dag,
+    )
+
+    # Task 1 function operator task
+    task1_fun_task = PythonOperator(
+        task_id='task1_fun_task',
+        python_callable=task1_fun_operator,
+        provide_context=True,
+        dag=dag,
+    )
+
+    # Process data task
+    process_data_task = PythonOperator(
+        task_id='process_data',
+        python_callable=process_data,
+        provide_context=True,
+        dag=dag,
+    )
+
+    # Send email task
+    send_email_task = PythonOperator(
+        task_id='send_email_task',
+        python_callable=send_email,
+        provide_context=True,
+        dag=dag,
+    )
+
+    # Set dependencies between the dynamically created tasks
+    install_packages_task >> load_tasks_task >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
+
+# Create the initial tasks
 install_packages_task = PythonOperator(
     task_id='install_packages',
     python_callable=install_requirements,
     dag=dag,
 )
-# Create Email operator
-
-send_email_task = PythonOperator(
-    task_id='send_email_task',
-    python_callable=lambda **kwargs: send_email(**kwargs),
-    provide_context=True,
-    dag=dag,
-)
-
-def task1_fun_operator(**kwargs):
-    from wheeldagutil.tasks import task1_fun
-    # Pull the CSV data from XCom
-    csv_data_json = kwargs['ti'].xcom_pull(key='csv_data', task_ids='read_csv')
-    
-    # Call task1_fun to update the CSV data with balance column
-    updated_csv_data_json = task1_fun(csv_data_json)
-    
-    # Push the updated CSV data back to XCom
-    kwargs['ti'].xcom_push(key='csv_data', value=updated_csv_data_json)
-    print("Task 1 fun executed, CSV data updated and pushed to XCom")
-task1_fun_task = PythonOperator(
-    task_id='task1_fun_task',
-    python_callable=task1_fun_operator,
-    provide_context=True,
-    dag=dag,
-)
-import importlib
-
-def load_wheeldagutil_tasks():
-    global  read_csv, task1_fun_operator, process_data, send_email
-
-    wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
-    read_csv = wheeldagutil_tasks.read_csv
-    # task1_fun_operator = wheeldagutil_tasks.task1_fun_operator
-    process_data = wheeldagutil_tasks.process_data
-    send_email = wheeldagutil_tasks.send_email
-
-    print("Loaded wheeldagutil tasks successfully")
 
 load_tasks_task = PythonOperator(
     task_id='load_tasks',
@@ -136,5 +137,17 @@ load_tasks_task = PythonOperator(
     dag=dag,
 )
 
-# Set task dependencies
-install_packages_task  >> load_tasks_task >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
+create_tasks_task = PythonOperator(
+    task_id='create_tasks',
+    python_callable=create_dependent_tasks,
+    dag=dag,
+)
+
+log_dags_dir_task = PythonOperator(
+    task_id='log_dags_dir',
+    python_callable=log_dags_directory_contents,
+    dag=dag,
+)
+
+# Set initial task dependencies
+install_packages_task >> load_tasks_task >> log_dags_dir_task >> create_tasks_task
