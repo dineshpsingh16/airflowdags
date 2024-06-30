@@ -81,7 +81,7 @@ def load_wheeldagutil_tasks():
 
     wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
     read_csv = wheeldagutil_tasks.read_csv
-    task1_fun_operator = wheeldagutil_tasks.task1_fun_operator
+    # task1_fun_operator = wheeldagutil_tasks.task1_fun_operator
     process_data = wheeldagutil_tasks.process_data
     send_email = wheeldagutil_tasks.send_email
 
