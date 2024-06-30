@@ -44,46 +44,6 @@ def log_dags_directory_contents():
     else:
         print("dist folder not found")
 
-def install_requirements():
-    import os
-    import glob
-    import pkg_resources
-    # Path to the dist folder in the current DAG directory
-    dag_folder = os.path.dirname(os.path.abspath(__file__))
-    print(f"dag_folder :{dag_folder}")
-    dag_files = os.listdir(dag_folder)
-    print("contents of dag folder")
-    dist_folder = os.path.join(dag_folder, 'dist')
-    requirements_path = os.path.join(dag_folder, 'requirements.txt')
-    print(f" requirements_path :{requirements_path}")
-    # Install packages from the requirements.txt file
-    if os.path.exists(requirements_path):
-        print("requirements_path found")
-        subprocess.check_call(['pip', 'install', '-r', requirements_path])    
-    if os.path.exists(dist_folder):
-        print(f"dist folder found at: {dist_folder}")
-        dist_files = os.listdir(dist_folder)
-        if dist_files:
-            print(f"Contents of dist folder: {dist_files}")
-        else:
-            print("dist folder is empty")
-    else:
-        print("dist folder not found")
-    # Find all wheel files in the dist folder
-    wheel_files = glob.glob(os.path.join(dist_folder, '*.whl'))
-    print(f"dist_folder :{dist_folder} ")   
-    print(f"wheel_files : ",wheel_files)    
-    # Install each wheel file
-    for wheel_file in wheel_files:
-        print(f"Installing wheel package: {wheel_file}")        
-        package_name = os.path.basename(wheel_file).split('-')[0]
-        subprocess.check_call(['pip', 'uninstall', '-y', package_name])
-        subprocess.check_call(['pip', 'install', wheel_file])
-    # Verify installation by listing installed packages
-    installed_packages = pkg_resources.working_set
-    for package in installed_packages:
-        print(package.key, package.version)
-
 def read_csv(**kwargs):
     import pandas as pd
     import os
@@ -149,6 +109,7 @@ def process_data(**kwargs):
     print("Task 2 executed, PDF report created and path pushed to XCom")
 
 def send_email(**kwargs):
+    from airflow.operators.email import EmailOperator
     # Pull the report file path from XCom
     report_file = kwargs['ti'].xcom_pull(key='report_file', task_ids='process_data')
     

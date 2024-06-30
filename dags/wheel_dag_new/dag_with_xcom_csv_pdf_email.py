@@ -3,10 +3,9 @@
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.operators.python import PythonVirtualenvOperator
-from airflow.operators.email import EmailOperator
+
 import subprocess
-from wheeldagutil.tasks import  install_requirements, read_csv, task1_fun_operator, process_data, send_email
+# from wheeldagutil.tasks import  install_requirements, read_csv, task1_fun_operator, process_data, send_email
 
 # Define default_args
 default_args = {
@@ -30,19 +29,58 @@ dag = DAG(
 
 # Define Python functions
 
+def install_requirements():
+    import os
+    import glob
+    import pkg_resources
+    # Path to the dist folder in the current DAG directory
+    dag_folder = os.path.dirname(os.path.abspath(__file__))
+    print(f"dag_folder :{dag_folder}")
+    dag_files = os.listdir(dag_folder)
+    print("contents of dag folder")
+    dist_folder = os.path.join(dag_folder, 'dist')
+    requirements_path = os.path.join(dag_folder, 'requirements.txt')
+    print(f" requirements_path :{requirements_path}")
+    # Install packages from the requirements.txt file
+    if os.path.exists(requirements_path):
+        print("requirements_path found")
+        subprocess.check_call(['pip', 'install', '-r', requirements_path])    
+    if os.path.exists(dist_folder):
+        print(f"dist folder found at: {dist_folder}")
+        dist_files = os.listdir(dist_folder)
+        if dist_files:
+            print(f"Contents of dist folder: {dist_files}")
+        else:
+            print("dist folder is empty")
+    else:
+        print("dist folder not found")
+    # Find all wheel files in the dist folder
+    wheel_files = glob.glob(os.path.join(dist_folder, '*.whl'))
+    print(f"dist_folder :{dist_folder} ")   
+    print(f"wheel_files : ",wheel_files)    
+    # Install each wheel file
+    for wheel_file in wheel_files:
+        print(f"Installing wheel package: {wheel_file}")        
+        package_name = os.path.basename(wheel_file).split('-')[0]
+        subprocess.check_call(['pip', 'uninstall', '-y', package_name])
+        subprocess.check_call(['pip', 'install', wheel_file])
+    # Verify installation by listing installed packages
+    installed_packages = pkg_resources.working_set
+    for package in installed_packages:
+        print(package.key, package.version)
 
 
 # Create Python operators
 read_csv_task = PythonOperator(
     task_id='read_csv',
-    python_callable=read_csv,
+    python_callable=lambda **kwargs: read_csv(**kwargs),
     provide_context=True,
     dag=dag,
 )
 
 process_data_task = PythonOperator(
     task_id='process_data',
-    python_callable=process_data,
+    python_callable=lambda **kwargs: process_data(**kwargs),
     provide_context=True,
     dag=dag,
 )
@@ -79,12 +117,24 @@ task1_fun_task = PythonOperator(
     provide_context=True,
     dag=dag,
 )
+import importlib
 
-log_dags_dir_task = PythonOperator(
-    task_id='log_dags_dir',
-    python_callable=log_dags_directory_contents,
+def load_wheeldagutil_tasks():
+    global  read_csv, task1_fun_operator, process_data, send_email
+
+    wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
+    read_csv = wheeldagutil_tasks.read_csv
+    task1_fun_operator = wheeldagutil_tasks.task1_fun_operator
+    process_data = wheeldagutil_tasks.process_data
+    send_email = wheeldagutil_tasks.send_email
+
+    print("Loaded wheeldagutil tasks successfully")
+
+load_tasks_task = PythonOperator(
+    task_id='load_tasks',
+    python_callable=load_wheeldagutil_tasks,
     dag=dag,
 )
 
 # Set task dependencies
-install_packages_task  >> log_dags_dir_task >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
+install_packages_task  >> load_tasks_task >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
