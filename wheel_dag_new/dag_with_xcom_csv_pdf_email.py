@@ -108,6 +108,7 @@ log_dags_dir_task = PythonOperator(
 
 # Create a function to create the dependent tasks
 def create_dependent_tasks():
+    from wheeldagutil.tasks import read_csv,process_data,send_email
     # Read CSV task
     read_csv_task = PythonOperator(
         task_id='read_csv',
@@ -151,4 +152,5 @@ create_tasks_task = PythonOperator(
 )
 
 # Set initial task dependencies
-install_packages_task >> load_tasks_task >> log_dags_dir_task >> create_tasks_task
+# install_packages_task >> load_tasks_task >> log_dags_dir_task >> create_tasks_task
+install_packages_task   >> create_tasks_task
