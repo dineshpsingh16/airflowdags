@@ -122,7 +122,7 @@ log_dags_dir_task = PythonOperator(
 
 # Create a function to create the dependent tasks
 def create_dependent_tasks():
-    from wheeldagutil.tasks import read_csv,process_data,send_email
+    from wheeldagutil.tasks import read_csv,process_data,send_email,task1_fun_operator
     # Read CSV task
     read_csv_task = PythonOperator(
         task_id='read_csv',
