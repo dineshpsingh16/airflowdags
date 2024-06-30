@@ -12,14 +12,6 @@ from airflow.sensors.python import PythonSensor
 def check_installation_status():
     return Variable.get("install_packages_task_status") == 'True'
 
-install_packages_sensor = PythonSensor(
-    task_id='install_packages_sensor',
-    python_callable=check_installation_status,
-    timeout=600,  # Timeout in seconds
-    poke_interval=10,  # Time in seconds that the job should wait in between each try
-    mode='poke',  # Mode can be poke or reschedule
-    dag=dag,
-)
 # Define default_args
 default_args = {
     'owner': 'airflow',
@@ -40,6 +32,14 @@ dag = DAG(
     schedule_interval=None,
 )
 
+install_packages_sensor = PythonSensor(
+    task_id='install_packages_sensor',
+    python_callable=check_installation_status,
+    timeout=600,  # Timeout in seconds
+    poke_interval=10,  # Time in seconds that the job should wait in between each try
+    mode='poke',  # Mode can be poke or reschedule
+    dag=dag,
+)
 # Define the function to install requirements
 def install_requirements():
     import pkg_resources
