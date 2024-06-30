@@ -87,7 +87,26 @@ def load_wheeldagutil_tasks():
 
     print("Loaded wheeldagutil tasks successfully")
 
-# Task to dynamically create tasks that depend on wheeldagutil
+# Create the initial tasks
+install_packages_task = PythonOperator(
+    task_id='install_packages',
+    python_callable=install_requirements,
+    dag=dag,
+)
+
+load_tasks_task = PythonOperator(
+    task_id='load_tasks',
+    python_callable=load_wheeldagutil_tasks,
+    dag=dag,
+)
+
+log_dags_dir_task = PythonOperator(
+    task_id='log_dags_dir',
+    python_callable=log_dags_directory_contents,
+    dag=dag,
+)
+
+# Create a function to create the dependent tasks
 def create_dependent_tasks():
     # Read CSV task
     read_csv_task = PythonOperator(
@@ -124,28 +143,10 @@ def create_dependent_tasks():
     # Set dependencies between the dynamically created tasks
     install_packages_task >> load_tasks_task >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
 
-# Create the initial tasks
-install_packages_task = PythonOperator(
-    task_id='install_packages',
-    python_callable=install_requirements,
-    dag=dag,
-)
-
-load_tasks_task = PythonOperator(
-    task_id='load_tasks',
-    python_callable=load_wheeldagutil_tasks,
-    dag=dag,
-)
-
+# Create the task to create the dependent tasks
 create_tasks_task = PythonOperator(
     task_id='create_tasks',
     python_callable=create_dependent_tasks,
-    dag=dag,
-)
-
-log_dags_dir_task = PythonOperator(
-    task_id='log_dags_dir',
-    python_callable=log_dags_directory_contents,
     dag=dag,
 )
 
