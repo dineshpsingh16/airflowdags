@@ -5,7 +5,21 @@ import subprocess
 import os
 import glob
 import importlib
+from airflow.models import Variable
 
+from airflow.sensors.python import PythonSensor
+
+def check_installation_status():
+    return Variable.get("install_packages_task_status") == 'True'
+
+install_packages_sensor = PythonSensor(
+    task_id='install_packages_sensor',
+    python_callable=check_installation_status,
+    timeout=600,  # Timeout in seconds
+    poke_interval=10,  # Time in seconds that the job should wait in between each try
+    mode='poke',  # Mode can be poke or reschedule
+    dag=dag,
+)
 # Define default_args
 default_args = {
     'owner': 'airflow',
@@ -29,7 +43,7 @@ dag = DAG(
 # Define the function to install requirements
 def install_requirements():
     import pkg_resources
-    
+    Variable.set("install_packages_task_status", False)
     # Path to the dist folder in the current DAG directory
     dag_folder = os.path.dirname(os.path.abspath(__file__))
     print(f"dag_folder :{dag_folder}")
@@ -68,7 +82,7 @@ def install_requirements():
     installed_packages = pkg_resources.working_set
     for package in installed_packages:
         print(package.key, package.version)
-
+    Variable.set("install_packages_task_status", True)
 # Task to log the contents of the DAG directory
 def log_dags_directory_contents():
     dag_folder = os.path.dirname(os.path.abspath(__file__))
@@ -153,4 +167,4 @@ create_tasks_task = PythonOperator(
 
 # Set initial task dependencies
 # install_packages_task >> load_tasks_task >> log_dags_dir_task >> create_tasks_task
-install_packages_task   >> create_tasks_task
+install_packages_task >> install_packages_sensor  >> create_tasks_task
