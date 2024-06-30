@@ -95,7 +95,7 @@ install_packages_task = PythonOperator(
 
 send_email_task = PythonOperator(
     task_id='send_email_task',
-    python_callable=send_email,
+    python_callable=lambda **kwargs: send_email(**kwargs),
     provide_context=True,
     dag=dag,
 )
