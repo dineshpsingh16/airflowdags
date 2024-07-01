@@ -22,7 +22,12 @@ def check_tasks_loaded_status():
     print("task1_fun_operator:", task1_fun_operator)
     print("process_data:", process_data)
     print("send_email:", send_email)
-    return read_csv is not None and task1_fun_operator is not None and process_data is not None and send_email is not None
+    flag_status = read_csv is not None and task1_fun_operator is not None and process_data is not None and send_email is not None
+    if flag_status:
+        return True
+    load_wheeldagutil_tasks()
+    flag_status = read_csv is not None and task1_fun_operator is not None and process_data is not None and send_email is not None
+    return flag_status
 
 # Define default_args
 default_args = {
