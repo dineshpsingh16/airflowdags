@@ -108,7 +108,7 @@ def log_dags_directory_contents():
 def load_wheeldagutil_tasks():
     # global read_csv, task1_fun_operator, process_data, send_email
     print("loading wheeldagutil tasks ")
-    print(f"read_csv: {read_csv}")
+    # print(f"read_csv: {read_csv}")
     wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
     print(f"wheeldagutil_tasks: {wheeldagutil_tasks}")
     read_csv = wheeldagutil_tasks.read_csv
