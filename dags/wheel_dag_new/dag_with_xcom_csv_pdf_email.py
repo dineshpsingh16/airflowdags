@@ -165,6 +165,37 @@ create_tasks_task = PythonOperator(
     dag=dag,
 )
 
+# Define the tasks that depend on wheeldagutil after ensuring it is installed
+read_csv_task = PythonOperator(
+    task_id='read_csv',
+    python_callable=lambda **kwargs: read_csv(**kwargs),
+    provide_context=True,
+    dag=dag,
+)
+
+task1_fun_task = PythonOperator(
+    task_id='task1_fun_task',
+    python_callable=lambda **kwargs: task1_fun_operator(**kwargs),
+    provide_context=True,
+    dag=dag,
+)
+
+process_data_task = PythonOperator(
+    task_id='process_data',
+    python_callable=lambda **kwargs: process_data(**kwargs),
+    provide_context=True,
+    dag=dag,
+)
+
+send_email_task = PythonOperator(
+    task_id='send_email_task',
+    python_callable=lambda **kwargs: send_email(**kwargs),
+    provide_context=True,
+    dag=dag,
+)
+
+
 # Set initial task dependencies
 # install_packages_task >> load_tasks_task >> log_dags_dir_task >> create_tasks_task
-install_packages_task >> install_packages_sensor  >> create_tasks_task
+# install_packages_task >> install_packages_sensor  >> create_tasks_task
+install_packages_task >> install_packages_sensor >> load_tasks_task >> log_dags_dir_task >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
