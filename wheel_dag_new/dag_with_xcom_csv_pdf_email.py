@@ -18,7 +18,8 @@ def check_installation_status():
     return Variable.get("install_packages_task_status") == 'True'
 
 def check_tasks_loaded_status():
-    return Variable.get("load_tasks_task_status") == 'True'
+    return read_csv != None and task1_fun_operator !=None and process_data != None and send_email !=None 
+# Variable.get("load_tasks_task_status") == 'True'
 
 # Define default_args
 default_args = {
@@ -110,7 +111,6 @@ def load_wheeldagutil_tasks():
     send_email = wheeldagutil_tasks.send_email
 
     print("Loaded wheeldagutil tasks successfully")
-    Variable.set("load_tasks_task_status", True)
 
 # Task to print loaded tasks
 def print_loaded_tasks():
