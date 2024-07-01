@@ -203,4 +203,4 @@ for i in range(len(dynamic_tasks) - 1):
     dynamic_tasks[i] >> dynamic_tasks[i + 1]
 
 # Ensure print_tasks_task leads into the first dynamic task
-print_tasks_task >> dynamic_tasks[0]
+print_tasks_task >> dynamic_tasks
