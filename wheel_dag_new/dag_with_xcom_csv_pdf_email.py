@@ -7,7 +7,7 @@ import glob
 import importlib
 from airflow.models import Variable
 from airflow.sensors.python import PythonSensor
-
+global read_csv, task1_fun_operator, process_data, send_email
 def check_installation_status():
     return Variable.get("install_packages_task_status") == 'True'
 
@@ -95,7 +95,6 @@ def log_dags_directory_contents():
 
 # Task to load the wheeldagutil tasks
 def load_wheeldagutil_tasks():
-    global read_csv, task1_fun_operator, process_data, send_email
 
     wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
     read_csv = wheeldagutil_tasks.read_csv
