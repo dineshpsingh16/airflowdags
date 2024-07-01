@@ -9,16 +9,20 @@ from airflow.models import Variable
 from airflow.sensors.python import PythonSensor
 
 # Global variables to hold the functions from wheeldagutil
-read_csv = None
-task1_fun_operator = None
-process_data = None
-send_email = None
+global read_csv ,task1_fun_operator ,process_data ,send_email
 
 def check_installation_status():
     return Variable.get("install_packages_task_status") == 'True'
 
 def check_tasks_loaded_status():
-    return read_csv != None and task1_fun_operator !=None and process_data != None and send_email !=None 
+    try:
+        type(read_csv)
+        type(task1_fun_operator)
+        type(process_data)
+        type(send_email)
+        return True
+    except:
+        return False
 # Variable.get("load_tasks_task_status") == 'True'
 
 # Define default_args
@@ -102,7 +106,7 @@ def log_dags_directory_contents():
 
 # Task to load the wheeldagutil tasks
 def load_wheeldagutil_tasks():
-    global read_csv, task1_fun_operator, process_data, send_email
+    # global read_csv, task1_fun_operator, process_data, send_email
 
     wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
     read_csv = wheeldagutil_tasks.read_csv
@@ -114,7 +118,6 @@ def load_wheeldagutil_tasks():
 
 # Task to print loaded tasks
 def print_loaded_tasks():
-    global read_csv, task1_fun_operator, process_data, send_email
     print(f"read_csv: {read_csv}")
     print(f"task1_fun_operator: {task1_fun_operator}")
     print(f"process_data: {process_data}")    
