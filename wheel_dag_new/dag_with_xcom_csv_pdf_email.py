@@ -107,12 +107,18 @@ def log_dags_directory_contents():
 # Task to load the wheeldagutil tasks
 def load_wheeldagutil_tasks():
     # global read_csv, task1_fun_operator, process_data, send_email
-
+    print("loading wheeldagutil tasks ")
+    print(f"read_csv: {read_csv}")
     wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
+    print(f"wheeldagutil_tasks: {wheeldagutil_tasks}")
     read_csv = wheeldagutil_tasks.read_csv
+    print(f"read_csv: {read_csv}")
     task1_fun_operator = wheeldagutil_tasks.task1_fun_operator
+    print(f"task1_fun_operator: {task1_fun_operator}")
     process_data = wheeldagutil_tasks.process_data
+    print(f"task1_fun_operator: {task1_fun_operator}")
     send_email = wheeldagutil_tasks.send_email
+    print(f"send_email: {send_email}")
 
     print("Loaded wheeldagutil tasks successfully")
 
