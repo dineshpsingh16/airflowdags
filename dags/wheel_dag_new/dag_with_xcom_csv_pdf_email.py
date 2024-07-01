@@ -98,18 +98,25 @@ def load_wheeldagutil_tasks():
 
     wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
     read_csv = wheeldagutil_tasks.read_csv
+    Variable.set("read_csv", read_csv)
     task1_fun_operator = wheeldagutil_tasks.task1_fun_operator
+    Variable.set("task1_fun_operator", task1_fun_operator)
     process_data = wheeldagutil_tasks.process_data
+    Variable.set("process_data", process_data)
     send_email = wheeldagutil_tasks.send_email
-
+    Variable.set("send_email", send_email)
     print("Loaded wheeldagutil tasks successfully")
     Variable.set("load_tasks_task_status", True)
 
 # Task to print loaded tasks
 def print_loaded_tasks():
+    read_csv=Variable.get("read_csv")
     print(f"read_csv: {read_csv}")
+    task1_fun_operator=Variable.get("task1_fun_operator")
     print(f"task1_fun_operator: {task1_fun_operator}")
+    process_data=Variable.get("process_data")    
     print(f"process_data: {process_data}")
+    send_email=Variable.get("send_email")        
     print(f"send_email: {send_email}")
 
 # Create the initial tasks
