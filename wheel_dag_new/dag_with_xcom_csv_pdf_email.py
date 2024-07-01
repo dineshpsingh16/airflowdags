@@ -183,4 +183,20 @@ send_email_task = PythonOperator(
     dag=dag,
 )
 
-install_packages_task >> install_packages_sensor >> load_tasks_task >> tasks_loaded_sensor >> log_dags_dir_task >> print_tasks_task >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
+# List of tasks in order for dynamic dependencies
+dynamic_tasks = [
+    read_csv_task,
+    task1_fun_task,
+    process_data_task,
+    send_email_task
+]
+
+# Set dependencies for initial tasks
+install_packages_task >> install_packages_sensor >> load_tasks_task >> tasks_loaded_sensor >> log_dags_dir_task >> print_tasks_task
+
+# Set dependencies dynamically for the rest of the tasks
+for i in range(len(dynamic_tasks) - 1):
+    dynamic_tasks[i] >> dynamic_tasks[i + 1]
+
+# Ensure print_tasks_task leads into the first dynamic task
+print_tasks_task >> dynamic_tasks[0]
