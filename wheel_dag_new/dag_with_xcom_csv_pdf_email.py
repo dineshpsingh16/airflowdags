@@ -9,21 +9,17 @@ from airflow.models import Variable
 from airflow.sensors.python import PythonSensor
 
 # Global variables to hold the functions from wheeldagutil
-global read_csv ,task1_fun_operator ,process_data ,send_email
+global read_csv, task1_fun_operator, process_data, send_email
+read_csv = None
+task1_fun_operator = None
+process_data = None
+send_email = None
 
 def check_installation_status():
     return Variable.get("install_packages_task_status") == 'True'
 
 def check_tasks_loaded_status():
-    try:
-        type(read_csv)
-        type(task1_fun_operator)
-        type(process_data)
-        type(send_email)
-        return True
-    except:
-        return False
-# Variable.get("load_tasks_task_status") == 'True'
+    return read_csv is not None and task1_fun_operator is not None and process_data is not None and send_email is not None
 
 # Define default_args
 default_args = {
@@ -60,10 +56,10 @@ def install_requirements():
     Variable.set("install_packages_task_status", False)
     # Path to the dist folder in the current DAG directory
     dag_folder = os.path.dirname(os.path.abspath(__file__))
-    print(f"dag_folder :{dag_folder}")
+    print(f"dag_folder: {dag_folder}")
     dist_folder = os.path.join(dag_folder, 'dist')
     requirements_path = os.path.join(dag_folder, 'requirements.txt')
-    print(f"requirements_path :{requirements_path}")
+    print(f"requirements_path: {requirements_path}")
     
     # Install packages from the requirements.txt file
     if os.path.exists(requirements_path):
@@ -82,8 +78,8 @@ def install_requirements():
     
     # Find all wheel files in the dist folder
     wheel_files = glob.glob(os.path.join(dist_folder, '*.whl'))
-    print(f"dist_folder :{dist_folder} ")
-    print(f"wheel_files : ", wheel_files)
+    print(f"dist_folder: {dist_folder}")
+    print(f"wheel_files: ", wheel_files)
     
     # Install each wheel file
     for wheel_file in wheel_files:
@@ -106,9 +102,8 @@ def log_dags_directory_contents():
 
 # Task to load the wheeldagutil tasks
 def load_wheeldagutil_tasks():
-    # global read_csv, task1_fun_operator, process_data, send_email
-    print("loading wheeldagutil tasks ")
-    # print(f"read_csv: {read_csv}")
+    global read_csv, task1_fun_operator, process_data, send_email
+    print("loading wheeldagutil tasks")
     wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
     print(f"wheeldagutil_tasks: {wheeldagutil_tasks}")
     read_csv = wheeldagutil_tasks.read_csv
@@ -116,7 +111,7 @@ def load_wheeldagutil_tasks():
     task1_fun_operator = wheeldagutil_tasks.task1_fun_operator
     print(f"task1_fun_operator: {task1_fun_operator}")
     process_data = wheeldagutil_tasks.process_data
-    print(f"task1_fun_operator: {task1_fun_operator}")
+    print(f"process_data: {process_data}")
     send_email = wheeldagutil_tasks.send_email
     print(f"send_email: {send_email}")
 
@@ -124,9 +119,10 @@ def load_wheeldagutil_tasks():
 
 # Task to print loaded tasks
 def print_loaded_tasks():
+    global read_csv, task1_fun_operator, process_data, send_email
     print(f"read_csv: {read_csv}")
     print(f"task1_fun_operator: {task1_fun_operator}")
-    print(f"process_data: {process_data}")    
+    print(f"process_data: {process_data}")
     print(f"send_email: {send_email}")
 
 # Create the initial tasks
