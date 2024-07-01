@@ -9,16 +9,10 @@ from airflow.models import Variable
 from airflow.sensors.python import PythonSensor
 
 # Global variables to hold the functions from wheeldagutil
-# read_csv = None
-# task1_fun_operator = None
-# process_data = None
-# send_email = None
-dynamic_tasks = [
-    # read_csv_task,
-    # task1_fun_task,
-    # process_data_task,
-    # send_email_task
-]
+read_csv = None
+task1_fun_operator = None
+process_data = None
+send_email = None
 
 def check_installation_status():
     return Variable.get("install_packages_task_status") == 'True'
@@ -108,16 +102,12 @@ def log_dags_directory_contents():
 # Task to load the wheeldagutil tasks
 def load_wheeldagutil_tasks():
     global read_csv, task1_fun_operator, process_data, send_email
-    
+
     wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
     read_csv = wheeldagutil_tasks.read_csv
-    dynamic_tasks.append(read_csv)
     task1_fun_operator = wheeldagutil_tasks.task1_fun_operator
-    dynamic_tasks.append(task1_fun_operator)
     process_data = wheeldagutil_tasks.process_data
-    dynamic_tasks.append(process_data)
     send_email = wheeldagutil_tasks.send_email
-    dynamic_tasks.append(send_email)
 
     print("Loaded wheeldagutil tasks successfully")
     Variable.set("load_tasks_task_status", True)
@@ -193,14 +183,5 @@ send_email_task = PythonOperator(
     dag=dag,
 )
 
-# List of tasks in order for dynamic dependencies
-
-# Set dependencies for initial tasks
-install_packages_task >> install_packages_sensor >> load_tasks_task >> tasks_loaded_sensor >> log_dags_dir_task >> print_tasks_task
-
-# Set dependencies dynamically for the rest of the tasks
-for i in range(len(dynamic_tasks) - 1):
-    dynamic_tasks[i] >> dynamic_tasks[i + 1]
-
-# Ensure print_tasks_task leads into the first dynamic task
-print_tasks_task >> dynamic_tasks
+# Ensure correct order of task execution
+install_packages_task >> install_packages_sensor >> load_tasks_task >> tasks_loaded_sensor >> log_dags_dir_task >> print_tasks_task >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
