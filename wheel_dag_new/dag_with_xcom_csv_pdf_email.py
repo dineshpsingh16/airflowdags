@@ -19,6 +19,10 @@ def check_installation_status():
     return Variable.get("install_packages_task_status") == 'True'
 
 def check_tasks_loaded_status():
+    print( "read_csv ",read_csv )
+    print( "task1_fun_operator ",task1_fun_operator )
+    print( "process_data ",process_data )
+    print( "send_email ",send_email )
     return read_csv is not None and task1_fun_operator is not None and process_data is not None and send_email is not None
 
 # Define default_args
