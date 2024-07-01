@@ -9,7 +9,6 @@ from airflow.models import Variable
 from airflow.sensors.python import PythonSensor
 
 # Global variables to hold the functions from wheeldagutil
-global read_csv, task1_fun_operator, process_data, send_email
 read_csv = None
 task1_fun_operator = None
 process_data = None
@@ -19,10 +18,10 @@ def check_installation_status():
     return Variable.get("install_packages_task_status") == 'True'
 
 def check_tasks_loaded_status():
-    print( "read_csv ",read_csv )
-    print( "task1_fun_operator ",task1_fun_operator )
-    print( "process_data ",process_data )
-    print( "send_email ",send_email )
+    print("read_csv:", read_csv)
+    print("task1_fun_operator:", task1_fun_operator)
+    print("process_data:", process_data)
+    print("send_email:", send_email)
     return read_csv is not None and task1_fun_operator is not None and process_data is not None and send_email is not None
 
 # Define default_args
@@ -83,7 +82,7 @@ def install_requirements():
     # Find all wheel files in the dist folder
     wheel_files = glob.glob(os.path.join(dist_folder, '*.whl'))
     print(f"dist_folder: {dist_folder}")
-    print(f"wheel_files: ", wheel_files)
+    print(f"wheel_files:", wheel_files)
     
     # Install each wheel file
     for wheel_file in wheel_files:
@@ -123,7 +122,6 @@ def load_wheeldagutil_tasks():
 
 # Task to print loaded tasks
 def print_loaded_tasks():
-    global read_csv, task1_fun_operator, process_data, send_email
     print(f"read_csv: {read_csv}")
     print(f"task1_fun_operator: {task1_fun_operator}")
     print(f"process_data: {process_data}")
