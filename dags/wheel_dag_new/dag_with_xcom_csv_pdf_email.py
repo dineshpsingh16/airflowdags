@@ -122,6 +122,7 @@ def load_wheeldagutil_tasks():
 
 # Task to print loaded tasks
 def print_loaded_tasks():
+    global read_csv, task1_fun_operator, process_data, send_email
     print(f"read_csv: {read_csv}")
     print(f"task1_fun_operator: {task1_fun_operator}")
     print(f"process_data: {process_data}")
