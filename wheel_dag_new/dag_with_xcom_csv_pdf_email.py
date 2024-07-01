@@ -6,11 +6,13 @@ import os
 import glob
 import importlib
 from airflow.models import Variable
-
 from airflow.sensors.python import PythonSensor
 
 def check_installation_status():
     return Variable.get("install_packages_task_status") == 'True'
+
+def check_tasks_loaded_status():
+    return Variable.get("load_tasks_task_status") == 'True'
 
 # Define default_args
 default_args = {
@@ -40,6 +42,7 @@ install_packages_sensor = PythonSensor(
     mode='poke',  # Mode can be poke or reschedule
     dag=dag,
 )
+
 # Define the function to install requirements
 def install_requirements():
     import pkg_resources
@@ -83,6 +86,7 @@ def install_requirements():
     for package in installed_packages:
         print(package.key, package.version)
     Variable.set("install_packages_task_status", True)
+
 # Task to log the contents of the DAG directory
 def log_dags_directory_contents():
     dag_folder = os.path.dirname(os.path.abspath(__file__))
@@ -100,6 +104,14 @@ def load_wheeldagutil_tasks():
     send_email = wheeldagutil_tasks.send_email
 
     print("Loaded wheeldagutil tasks successfully")
+    Variable.set("load_tasks_task_status", True)
+
+# Task to print loaded tasks
+def print_loaded_tasks():
+    print(f"read_csv: {read_csv}")
+    print(f"task1_fun_operator: {task1_fun_operator}")
+    print(f"process_data: {process_data}")
+    print(f"send_email: {send_email}")
 
 # Create the initial tasks
 install_packages_task = PythonOperator(
@@ -114,56 +126,26 @@ load_tasks_task = PythonOperator(
     dag=dag,
 )
 
+tasks_loaded_sensor = PythonSensor(
+    task_id='tasks_loaded_sensor',
+    python_callable=check_tasks_loaded_status,
+    timeout=600,
+    poke_interval=10,
+    mode='poke',
+    dag=dag,
+)
+
 log_dags_dir_task = PythonOperator(
     task_id='log_dags_dir',
     python_callable=log_dags_directory_contents,
     dag=dag,
 )
 
-# Create a function to create the dependent tasks
-# def create_dependent_tasks():
-#     from wheeldagutil.tasks import read_csv,process_data,send_email,task1_fun_operator
-#     # Read CSV task
-#     read_csv_task = PythonOperator(
-#         task_id='read_csv',
-#         python_callable=read_csv,
-#         provide_context=True,
-#         dag=dag,
-#     )
-
-#     # Task 1 function operator task
-#     task1_fun_task = PythonOperator(
-#         task_id='task1_fun_task',
-#         python_callable=task1_fun_operator,
-#         provide_context=True,
-#         dag=dag,
-#     )
-
-#     # Process data task
-#     process_data_task = PythonOperator(
-#         task_id='process_data',
-#         python_callable=process_data,
-#         provide_context=True,
-#         dag=dag,
-#     )
-
-#     # Send email task
-#     send_email_task = PythonOperator(
-#         task_id='send_email_task',
-#         python_callable=send_email,
-#         provide_context=True,
-#         dag=dag,
-#     )
-
-#     # Set dependencies between the dynamically created tasks
-#     install_packages_task >> load_tasks_task >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
-
-# Create the task to create the dependent tasks
-# create_tasks_task = PythonOperator(
-#     task_id='create_tasks',
-#     python_callable=create_dependent_tasks,
-#     dag=dag,
-# )
+print_tasks_task = PythonOperator(
+    task_id='print_tasks',
+    python_callable=print_loaded_tasks,
+    dag=dag,
+)
 
 # Define the tasks that depend on wheeldagutil after ensuring it is installed
 read_csv_task = PythonOperator(
@@ -194,8 +176,4 @@ send_email_task = PythonOperator(
     dag=dag,
 )
 
-
-# Set initial task dependencies
-# install_packages_task >> load_tasks_task >> log_dags_dir_task >> create_tasks_task
-# install_packages_task >> install_packages_sensor  >> create_tasks_task
-install_packages_task >> install_packages_sensor >> load_tasks_task >> log_dags_dir_task >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
+install_packages_task >> install_packages_sensor >> load_tasks_task >> tasks_loaded_sensor >> log_dags_dir_task >> print_tasks_task >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
