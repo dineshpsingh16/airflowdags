@@ -9,16 +9,10 @@ from airflow.models import Variable
 from airflow.sensors.python import PythonSensor
 
 # Global variables to hold the functions from wheeldagutil
-read_csv = None
-task1_fun_operator = None
-process_data = None
-send_email = None
 
 def check_installation_status():
     return Variable.get("install_packages_task_status") == 'True'
 
-def check_tasks_loaded_status():
-    return Variable.get("load_tasks_task_status") == 'True'
 
 # Define default_args
 default_args = {
@@ -93,32 +87,7 @@ def install_requirements():
         print(package.key, package.version)
     Variable.set("install_packages_task_status", True)
 
-# Task to log the contents of the DAG directory
-def log_dags_directory_contents():
-    dag_folder = os.path.dirname(os.path.abspath(__file__))
-    print(f"Current directory: {dag_folder}")
-    print(f"Contents of the current directory: {os.listdir(dag_folder)}")
 
-# Task to load the wheeldagutil tasks
-def load_wheeldagutil_tasks():
-    global read_csv, task1_fun_operator, process_data, send_email
-
-    wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
-    read_csv = wheeldagutil_tasks.read_csv
-    task1_fun_operator = wheeldagutil_tasks.task1_fun_operator
-    process_data = wheeldagutil_tasks.process_data
-    send_email = wheeldagutil_tasks.send_email
-
-    print("Loaded wheeldagutil tasks successfully")
-    Variable.set("load_tasks_task_status", True)
-
-# Task to print loaded tasks
-def print_loaded_tasks():
-    global read_csv, task1_fun_operator, process_data, send_email
-    print(f"read_csv: {read_csv}")
-    print(f"task1_fun_operator: {task1_fun_operator}")
-    print(f"process_data: {process_data}")    
-    print(f"send_email: {send_email}")
 
 # Create the initial tasks
 install_packages_task = PythonOperator(
@@ -127,32 +96,6 @@ install_packages_task = PythonOperator(
     dag=dag,
 )
 
-load_tasks_task = PythonOperator(
-    task_id='load_tasks',
-    python_callable=load_wheeldagutil_tasks,
-    dag=dag,
-)
-
-tasks_loaded_sensor = PythonSensor(
-    task_id='tasks_loaded_sensor',
-    python_callable=check_tasks_loaded_status,
-    timeout=600,
-    poke_interval=10,
-    mode='poke',
-    dag=dag,
-)
-
-log_dags_dir_task = PythonOperator(
-    task_id='log_dags_dir',
-    python_callable=log_dags_directory_contents,
-    dag=dag,
-)
-
-print_tasks_task = PythonOperator(
-    task_id='print_tasks',
-    python_callable=print_loaded_tasks,
-    dag=dag,
-)
 
 def execute_read_csv(**kwargs):
     global read_csv
@@ -181,12 +124,6 @@ task1_fun_task = PythonOperator(
     dag=dag,
 )
 
-# process_data_task = PythonOperator(
-#     task_id='process_data',
-#     python_callable=lambda **kwargs: process_data(**kwargs),
-#     provide_context=True,
-#     dag=dag,
-# )
 
 def process_data_function(**kwargs):
     global task1_fun_operator
@@ -201,11 +138,17 @@ process_data_task = PythonOperator(
     dag=dag,
 )
 
+def send_email_function(**kwargs):
+    global task1_fun_operator
+    wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
+    send_email = wheeldagutil_tasks.send_email    
+    send_email(**kwargs)
+
 send_email_task = PythonOperator(
     task_id='send_email_task',
-    python_callable=lambda **kwargs: send_email(**kwargs),
+    python_callable=send_email_function,
     provide_context=True,
     dag=dag,
 )
 
-install_packages_task >> install_packages_sensor >> load_tasks_task >> tasks_loaded_sensor >> log_dags_dir_task >> print_tasks_task >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
+install_packages_task >> install_packages_sensor  >> read_csv_task >> task1_fun_task >> process_data_task >> send_email_task
