@@ -154,27 +154,34 @@ print_tasks_task = PythonOperator(
     dag=dag,
 )
 
-# Define the tasks that depend on wheeldagutil after ensuring it is installed
-# read_csv_task = PythonOperator(
-#     task_id='read_csv',
-#     python_callable=lambda **kwargs: read_csv(**kwargs),
-#     provide_context=True,
-#     dag=dag,
-# )
 def execute_read_csv(**kwargs):
     global read_csv
     wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
     read_csv = wheeldagutil_tasks.read_csv    
     read_csv(**kwargs)
+
 read_csv_task = PythonOperator(
     task_id='read_csv',
     python_callable=execute_read_csv,
     provide_context=True,
     dag=dag,
 )
+
+# task1_fun_task = PythonOperator(
+#     task_id='task1_fun_task',
+#     python_callable=lambda **kwargs: task1_fun_operator(**kwargs),
+#     provide_context=True,
+#     dag=dag,
+# )
+
+def execute_task1_fun_operator(**kwargs):
+    global task1_fun_operator
+    wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
+    task1_fun_operator = wheeldagutil_tasks.task1_fun_operator    
+    task1_fun_operator(**kwargs)
 task1_fun_task = PythonOperator(
     task_id='task1_fun_task',
-    python_callable=lambda **kwargs: task1_fun_operator(**kwargs),
+    python_callable=execute_task1_fun_operator,
     provide_context=True,
     dag=dag,
 )
