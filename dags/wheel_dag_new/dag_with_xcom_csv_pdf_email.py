@@ -167,18 +167,13 @@ read_csv_task = PythonOperator(
     dag=dag,
 )
 
-# task1_fun_task = PythonOperator(
-#     task_id='task1_fun_task',
-#     python_callable=lambda **kwargs: task1_fun_operator(**kwargs),
-#     provide_context=True,
-#     dag=dag,
-# )
 
 def execute_task1_fun_operator(**kwargs):
     global task1_fun_operator
     wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
     task1_fun_operator = wheeldagutil_tasks.task1_fun_operator    
     task1_fun_operator(**kwargs)
+
 task1_fun_task = PythonOperator(
     task_id='task1_fun_task',
     python_callable=execute_task1_fun_operator,
@@ -186,9 +181,22 @@ task1_fun_task = PythonOperator(
     dag=dag,
 )
 
+# process_data_task = PythonOperator(
+#     task_id='process_data',
+#     python_callable=lambda **kwargs: process_data(**kwargs),
+#     provide_context=True,
+#     dag=dag,
+# )
+
+def process_data_function(**kwargs):
+    global task1_fun_operator
+    wheeldagutil_tasks = importlib.import_module('wheeldagutil.tasks')
+    process_data = wheeldagutil_tasks.process_data    
+    process_data(**kwargs)
+
 process_data_task = PythonOperator(
     task_id='process_data',
-    python_callable=lambda **kwargs: process_data(**kwargs),
+    python_callable=process_data_function,
     provide_context=True,
     dag=dag,
 )
